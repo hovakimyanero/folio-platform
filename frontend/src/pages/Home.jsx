@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAuthDialog } from '../context/AuthDialogContext';
 import api from '../utils/api';
 import { ArrowRight, Sparkles, TrendingUp, Clock, LayoutGrid, Users, Trophy } from 'lucide-react';
 
 export default function Home() {
   const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
   const [featured, setFeatured] = useState([]);
   const [trending, setTrending] = useState([]);
   const [recent, setRecent] = useState([]);
@@ -60,7 +62,7 @@ export default function Home() {
           {user ? (
             <Link to="/upload" className="btn btn-primary btn-lg">Загрузить проект</Link>
           ) : (
-            <button className="btn btn-primary btn-lg" onClick={() => document.querySelector('[data-auth-trigger]')?.click()}>
+            <button className="btn btn-primary btn-lg" onClick={openAuthDialog}>
               Начать бесплатно
             </button>
           )}
@@ -145,7 +147,7 @@ export default function Home() {
           Присоединяйтесь к 280 000+ креативных профессионалов.
         </p>
         {!user && (
-          <button className="btn btn-primary btn-lg">Создать портфолио</button>
+          <button className="btn btn-primary btn-lg" onClick={openAuthDialog}>Создать портфолио</button>
         )}
       </section>
     </div>
@@ -238,6 +240,8 @@ function SmallCard({ project }) {
 
 // ── Empty State ──
 function EmptyState({ title, text }) {
+  const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
   return (
     <div className="empty-state">
       <div className="empty-state-icon">
@@ -245,7 +249,11 @@ function EmptyState({ title, text }) {
       </div>
       <h3 className="empty-state-title">{title}</h3>
       <p className="empty-state-text">{text}</p>
-      <Link to="/upload" className="btn btn-primary">Загрузить проект</Link>
+      {user ? (
+        <Link to="/upload" className="btn btn-primary">Загрузить проект</Link>
+      ) : (
+        <button className="btn btn-primary" onClick={openAuthDialog}>Загрузить проект</button>
+      )}
     </div>
   );
 }

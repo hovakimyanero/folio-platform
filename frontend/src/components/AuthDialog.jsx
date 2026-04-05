@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -119,6 +120,11 @@ export default function AuthDialog({ open, onOpenChange }) {
             <div>
               <label className="input-label">Пароль</label>
               <input className="input" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+              {mode === 'login' && (
+                <Link to="/reset-password" onClick={() => onOpenChange(false)} style={{ display: 'block', textAlign: 'right', fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>
+                  Забыли пароль?
+                </Link>
+              )}
             </div>
 
             {error && (

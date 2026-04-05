@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { useAuthDialog } from './context/AuthDialogContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Cursor from './components/Cursor';
@@ -29,9 +31,17 @@ import FAQ from './pages/FAQ';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import CookiesPage from './pages/CookiesPage';
+import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
+
+  useEffect(() => {
+    if (!loading && !user) openAuthDialog();
+  }, [loading, user, openAuthDialog]);
+
   if (loading) return null;
   if (!user) return <Navigate to="/" replace />;
   return children;
@@ -77,6 +87,8 @@ export default function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/cookies" element={<CookiesPage />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
         </Routes>
       </main>
 

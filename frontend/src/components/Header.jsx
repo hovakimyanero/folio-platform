@@ -5,6 +5,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Avatar from '@radix-ui/react-avatar';
 import { Search, Bell, Plus, Settings, LogOut, User, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useAuthDialog } from '../context/AuthDialogContext';
 import { useToast } from '../context/ToastContext';
 import AuthDialog from './AuthDialog';
 import SearchDialog from './SearchDialog';
@@ -12,9 +13,9 @@ import SearchDialog from './SearchDialog';
 export default function Header() {
   const { user, logout } = useAuth();
   const { showToast } = useToast();
+  const { open: authOpen, setOpen: setAuthOpen } = useAuthDialog();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
