@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import * as Tooltip from '@radix-ui/react-tooltip';
+import * as Dialog from '@radix-ui/react-dialog';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Heart, Eye, MessageCircle, Share2, Bookmark, UserPlus, UserCheck, ArrowLeft, Trash2 } from 'lucide-react';
+import { Heart, Eye, MessageCircle, Share2, Bookmark, UserPlus, UserCheck, ArrowLeft, Trash2, Plus, X } from 'lucide-react';
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -19,6 +20,9 @@ export default function ProjectDetail() {
   const [likeCount, setLikeCount] = useState(0);
   const [following, setFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
+  const [collections, setCollections] = useState([]);
+  const [newCollName, setNewCollName] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -90,6 +94,38 @@ export default function ProjectDetail() {
     }
   };
 
+  const openCollections = async () => {
+    if (!user) return showToast('Войдите, чтобы сохранять', 'error');
+    try {
+      const { data } = await api.get('/collections');
+      setCollections(data.collections || []);
+    } catch {}
+    setCollectionsOpen(true);
+  };
+
+  const saveToCollection = async (collId) => {
+    try {
+      await api.post(`/collections/${collId}/projects`, { projectId: id });
+      showToast('Сохранено в коллекцию', 'success');
+      setCollectionsOpen(false);
+    } catch {
+      showToast('Уже в коллекции или ошибка', 'error');
+    }
+  };
+
+  const createAndSave = async () => {
+    if (!newCollName.trim()) return;
+    try {
+      const { data } = await api.post('/collections', { name: newCollName });
+      await api.post(`/collections/${data.collection.id}/projects`, { projectId: id });
+      showToast('Коллекция создана и проект сохранён', 'success');
+      setNewCollName('');
+      setCollectionsOpen(false);
+    } catch {
+      showToast('Ошибка создания', 'error');
+    }
+  };
+
   if (loading) return <div style={{ minHeight: '100vh', paddingTop: 200, textAlign: 'center', color: 'var(--text-3)' }}>Загрузка...</div>;
   if (!project) return <div style={{ minHeight: '100vh', paddingTop: 200, textAlign: 'center' }}><h2>Проект не найден</h2></div>;
 
@@ -129,12 +165,12 @@ export default function ProjectDetail() {
                   <Heart size={16} fill={liked ? 'var(--accent)' : 'none'} color={liked ? 'var(--accent)' : 'var(--text-2)'} />
                 </button>
               </Tooltip.Trigger>
-              <Tooltip.Content sideOffset={6}>{likeCount} likes</Tooltip.Content>
+              <Tooltip.Content sideOffset={6}>{likeCount} лайков</Tooltip.Content>
             </Tooltip.Root>
 
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <button className="btn-icon"><Bookmark size={16} color="var(--text-2)" /></button>
+                <button className="btn-icon" onClick={openCollections}><Bookmark size={16} color="var(--text-2)" /></button>
               </Tooltip.Trigger>
               <Tooltip.Content sideOffset={6}>Сохранить в коллекцию</Tooltip.Content>
             </Tooltip.Root>
@@ -156,7 +192,7 @@ export default function ProjectDetail() {
 
             {user && project.author.id !== user.id && (
               <button className={`btn ${following ? 'btn-secondary' : 'btn-primary'} btn-sm`} onClick={toggleFollow}>
-                {following ? <><UserCheck size={14} /> Following</> : <><UserPlus size={14} /> Follow</>}
+                {following ? <><UserCheck size={14} /> Подписка</> : <><UserPlus size={14} /> Подписаться</>}
               </button>
             )}
 
@@ -278,6 +314,54 @@ export default function ProjectDetail() {
         )}
       </div>
     </div>
+
+    {/* Save to collection dialog */}
+    <Dialog.Root open={collectionsOpen} onOpenChange={setCollectionsOpen}>
+      <Dialog.Portal>
+        <Dialog.Overlay style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 5000 }} />
+        <Dialog.Content style={{
+          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          width: '100%', maxWidth: 400, background: 'var(--card)', borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--glass-border)', padding: 32, zIndex: 5001,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <Dialog.Title style={{ fontFamily: 'var(--font-display)', fontSize: 24 }}>Сохранить в коллекцию</Dialog.Title>
+            <Dialog.Close style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}><X size={18} /></Dialog.Close>
+          </div>
+
+          {collections.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24, maxHeight: 240, overflowY: 'auto' }}>
+              {collections.map(c => (
+                <button key={c.id} onClick={() => saveToCollection(c.id)} style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+                  borderRadius: 'var(--radius-sm)', background: 'var(--surface)',
+                  border: '1px solid var(--glass-border)', cursor: 'pointer',
+                  color: 'var(--text)', fontSize: 14, textAlign: 'left', width: '100%',
+                  transition: 'background 0.2s',
+                }}>
+                  <Bookmark size={14} color="var(--text-3)" />
+                  {c.name}
+                  <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-3)' }}>{c._count?.projects || 0}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              className="input"
+              value={newCollName}
+              onChange={e => setNewCollName(e.target.value)}
+              placeholder="Новая коллекция..."
+              onKeyDown={e => e.key === 'Enter' && createAndSave()}
+              style={{ flex: 1 }}
+            />
+            <button className="btn btn-primary btn-sm" onClick={createAndSave}><Plus size={14} /></button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+
     </Tooltip.Provider>
   );
 }

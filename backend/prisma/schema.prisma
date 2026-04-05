@@ -30,6 +30,9 @@ model User {
   providerId    String?
 
   skills        String[] @default([])
+  specialization String[] @default([])
+  languages     String[] @default([])
+  birthDate     DateTime?
   socialLinks   Json?    // { twitter, instagram, dribbble, linkedin, github }
   notificationPrefs Json? // { likes: true, comments: true, follows: true, messages: true }
 

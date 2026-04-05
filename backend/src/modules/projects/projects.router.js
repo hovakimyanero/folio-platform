@@ -8,6 +8,22 @@ import { shouldNotify } from '../../common/notifications.js';
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
+// ═══ PUBLIC STATS ═══
+
+router.get('/stats', async (req, res) => {
+  try {
+    const [users, projects, viewsAgg] = await Promise.all([
+      req.prisma.user.count(),
+      req.prisma.project.count({ where: { published: true } }),
+      req.prisma.project.aggregate({ _sum: { viewCount: true } }),
+    ]);
+    res.json({ users, projects, views: viewsAgg._sum.viewCount || 0 });
+  } catch (err) {
+    console.error('Stats error:', err);
+    res.status(500).json({ error: { message: 'Failed to fetch stats' } });
+  }
+});
+
 // ═══ GET CATEGORIES ═══
 
 router.get('/categories', async (req, res) => {
@@ -167,7 +183,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
 // ═══ CREATE PROJECT ═══
 
 router.post('/', authMiddleware, upload.array('media', 20), async (req, res) => {
-  const { title, description, tags, tools, categoryId, colors } = req.body;
+  const { title, description, tags, tools, categoryId, colors, coverIndex } = req.body;
   const prisma = req.prisma;
 
   if (!title) {
@@ -200,7 +216,7 @@ router.post('/', authMiddleware, upload.array('media', 20), async (req, res) => 
       data: {
         title,
         description: description || null,
-        cover: mediaUrls[0]?.url || '',
+        cover: mediaUrls[parseInt(coverIndex) || 0]?.url || '',
         tags: tags ? JSON.parse(tags) : [],
         tools: tools ? JSON.parse(tools) : [],
         colors: colors ? JSON.parse(colors) : [],

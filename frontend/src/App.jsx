@@ -33,6 +33,7 @@ import Privacy from './pages/Privacy';
 import CookiesPage from './pages/CookiesPage';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
+import CookieBanner from './components/CookieBanner';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -93,6 +94,7 @@ export default function App() {
       </main>
 
       <Footer />
+      <CookieBanner />
     </>
   );
 }

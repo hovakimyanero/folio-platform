@@ -98,9 +98,9 @@ export default function AdminPanel() {
                 <div key={u.id} style={{ padding: '14px 20px', borderRadius: 'var(--radius-sm)', background: 'var(--card)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <img src={u.avatar} style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--glass-border)' }} alt="" />
-                    <div><div style={{ fontWeight: 500, fontSize: 14 }}>{u.displayName || u.username} {u.isBanned && <span style={{ color: '#ff6b6b', fontSize: 11 }}>(banned)</span>}</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>@{u.username} · {u._count?.projects} projects</div></div>
+                    <div><div style={{ fontWeight: 500, fontSize: 14 }}>{u.displayName || u.username} {u.isBanned && <span style={{ color: '#ff6b6b', fontSize: 11 }}>(забанен)</span>}</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>@{u.username} · {u._count?.projects} проектов</div></div>
                   </div>
-                  {!u.isBanned && <button className="btn btn-ghost btn-sm" onClick={() => banUser(u.id)} style={{ color: '#ff6b6b' }}><Ban size={12} /> Ban</button>}
+                  {!u.isBanned && <button className="btn btn-ghost btn-sm" onClick={() => banUser(u.id)} style={{ color: '#ff6b6b' }}><Ban size={12} /> Забанить</button>}
                 </div>
               ))}
             </div>

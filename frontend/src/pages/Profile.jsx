@@ -67,7 +67,7 @@ export default function Profile() {
               </div>
               {!isOwn && me && (
                 <button className={`btn ${following ? 'btn-secondary' : 'btn-primary'}`} onClick={toggleFollow}>
-                  {following ? <><UserCheck size={14} /> Following</> : <><UserPlus size={14} /> Follow</>}
+                  {following ? <><UserCheck size={14} /> Подписка</> : <><UserPlus size={14} /> Подписаться</>}
                 </button>
               )}
               {isOwn && <Link to="/settings" className="btn btn-secondary">Редактировать</Link>}
@@ -92,9 +92,27 @@ export default function Profile() {
 
         {/* Skills */}
         {profile.skills?.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 40 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
             {profile.skills.map(s => (
               <span key={s} style={{ padding: '6px 16px', borderRadius: 100, background: 'var(--glass)', border: '1px solid var(--glass-border)', fontSize: 12, color: 'var(--text-2)' }}>{s}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Specialization */}
+        {profile.specialization?.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+            {profile.specialization.map(s => (
+              <span key={s} style={{ padding: '6px 16px', borderRadius: 100, background: 'rgba(var(--accent-rgb), 0.1)', border: '1px solid rgba(var(--accent-rgb), 0.2)', fontSize: 12, color: 'var(--accent)' }}>{s}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Languages */}
+        {profile.languages?.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 40 }}>
+            {profile.languages.map(l => (
+              <span key={l} style={{ padding: '6px 16px', borderRadius: 100, background: 'var(--surface)', fontSize: 12, color: 'var(--text-3)' }}>{l}</span>
             ))}
           </div>
         )}

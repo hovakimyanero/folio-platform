@@ -12,6 +12,7 @@ export default function AuthDialog({ open, onOpenChange }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const { login, register } = useAuth();
   const { showToast } = useToast();
 
@@ -32,6 +33,11 @@ export default function AuthDialog({ open, onOpenChange }) {
         }
         if (password.length < 8) {
           setError('Пароль должен быть минимум 8 символов');
+          setLoading(false);
+          return;
+        }
+        if (!agreeTerms) {
+          setError('Необходимо принять условия использования');
           setLoading(false);
           return;
         }
@@ -109,8 +115,8 @@ export default function AuthDialog({ open, onOpenChange }) {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {mode === 'register' && (
               <div>
-                <label className="input-label">Username</label>
-                <input className="input" type="text" placeholder="your_username" value={username} onChange={e => setUsername(e.target.value)} />
+                <label className="input-label">Имя пользователя</label>
+                <input className="input" type="text" placeholder="ваш_логин" value={username} onChange={e => setUsername(e.target.value)} />
               </div>
             )}
             <div>
@@ -126,6 +132,13 @@ export default function AuthDialog({ open, onOpenChange }) {
                 </Link>
               )}
             </div>
+
+            {mode === 'register' && (
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 12, color: 'var(--text-3)', cursor: 'pointer' }}>
+                <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)} style={{ marginTop: 2, accentColor: 'var(--accent)' }} />
+                <span>Я принимаю <Link to="/terms" onClick={() => onOpenChange(false)} style={{ color: 'var(--accent)' }}>условия использования</Link> и <Link to="/privacy" onClick={() => onOpenChange(false)} style={{ color: 'var(--accent)' }}>политику конфиденциальности</Link></span>
+              </label>
+            )}
 
             {error && (
               <div style={{ fontSize: 13, color: '#ff6b6b', padding: '8px 12px', background: 'rgba(255,107,107,0.08)', borderRadius: 'var(--radius-xs)' }}>

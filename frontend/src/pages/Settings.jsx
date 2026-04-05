@@ -14,6 +14,9 @@ export default function Settings() {
   const [website, setWebsite] = useState(user?.website || '');
   const [location, setLocation] = useState(user?.location || '');
   const [skills, setSkills] = useState(user?.skills?.join(', ') || '');
+  const [specialization, setSpecialization] = useState(user?.specialization?.join(', ') || '');
+  const [languages, setLanguages] = useState(user?.languages?.join(', ') || '');
+  const [birthDate, setBirthDate] = useState(user?.birthDate ? user.birthDate.slice(0, 10) : '');
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState('profile');
   const avatarRef = useRef(null);
@@ -54,6 +57,9 @@ export default function Settings() {
       formData.append('website', website);
       formData.append('location', location);
       formData.append('skills', JSON.stringify(skills.split(',').map(s => s.trim()).filter(Boolean)));
+      formData.append('specialization', JSON.stringify(specialization.split(',').map(s => s.trim()).filter(Boolean)));
+      formData.append('languages', JSON.stringify(languages.split(',').map(s => s.trim()).filter(Boolean)));
+      formData.append('birthDate', birthDate || '');
       if (avatarFile) formData.append('avatar', avatarFile);
       if (coverFile) formData.append('cover', coverFile);
       await updateProfile(formData);
@@ -156,6 +162,9 @@ export default function Settings() {
               <div><label className="input-label">Сайт</label><input className="input" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://" /></div>
               <div><label className="input-label">Местоположение</label><input className="input" value={location} onChange={e => setLocation(e.target.value)} /></div>
               <div><label className="input-label">Навыки (через запятую)</label><input className="input" value={skills} onChange={e => setSkills(e.target.value)} placeholder="UI/UX, Branding, 3D" /></div>
+              <div><label className="input-label">Специализация (через запятую)</label><input className="input" value={specialization} onChange={e => setSpecialization(e.target.value)} placeholder="Веб-дизайн, Графический дизайн" /></div>
+              <div><label className="input-label">Языки (через запятую)</label><input className="input" value={languages} onChange={e => setLanguages(e.target.value)} placeholder="Русский, English" /></div>
+              <div><label className="input-label">Дата рождения</label><input className="input" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} /></div>
               <button className="btn btn-primary" onClick={handleSave} disabled={saving} style={{ alignSelf: 'flex-start', opacity: saving ? 0.6 : 1 }}><Save size={14} /> {saving ? 'Сохранение...' : 'Сохранить'}</button>
             </div>
           </Tabs.Content>
@@ -179,7 +188,38 @@ export default function Settings() {
               </button>
             </div>
           </Tabs.Content>
-          <Tabs.Content value="privacy"><p style={{ fontSize: 14, color: 'var(--text-2)' }}>Настройки приватности будут доступны в ближайшем обновлении.</p></Tabs.Content>
+          <Tabs.Content value="privacy">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+              <div>
+                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Экспорт данных</h3>
+                <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 16 }}>Скачайте копию всех ваших данных (профиль, проекты, комментарии).</p>
+                <button className="btn btn-secondary" onClick={async () => {
+                  try {
+                    const { data } = await api.get('/users/me/export');
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = 'folio-data-export.json'; a.click();
+                    URL.revokeObjectURL(url);
+                    showToast('Данные экспортированы', 'success');
+                  } catch { showToast('Ошибка экспорта', 'error'); }
+                }}>Скачать мои данные</button>
+              </div>
+              <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: 32 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, color: '#ff6b6b' }}>Удаление аккаунта</h3>
+                <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 16 }}>Это действие необратимо. Все ваши данные, проекты и комментарии будут удалены.</p>
+                <button className="btn btn-ghost" style={{ color: '#ff6b6b', borderColor: '#ff6b6b' }} onClick={async () => {
+                  if (!confirm('Вы уверены? Все данные будут удалены безвозвратно.')) return;
+                  if (!confirm('Это последнее предупреждение. Удалить аккаунт навсегда?')) return;
+                  try {
+                    await api.delete('/users/me');
+                    showToast('Аккаунт удалён', 'success');
+                    window.location.href = '/';
+                  } catch { showToast('Ошибка удаления', 'error'); }
+                }}>Удалить мой аккаунт</button>
+              </div>
+            </div>
+          </Tabs.Content>
         </Tabs.Root>
       </div>
     </div>

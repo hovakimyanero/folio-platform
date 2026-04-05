@@ -14,6 +14,7 @@ export default function Upload() {
   const [tags, setTags] = useState('');
   const [tools, setTools] = useState('');
   const [category, setCategory] = useState('');
+  const [coverIndex, setCoverIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ export default function Upload() {
     formData.append('tags', JSON.stringify(tags.split(',').map(t => t.trim()).filter(Boolean)));
     formData.append('tools', JSON.stringify(tools.split(',').map(t => t.trim()).filter(Boolean)));
     if (category) formData.append('categoryId', category);
+    formData.append('coverIndex', String(coverIndex));
     files.forEach(f => formData.append('media', f));
 
     try {
@@ -78,9 +80,24 @@ export default function Upload() {
           {previews.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
               {previews.map((p, i) => (
-                <div key={i} style={{ position: 'relative', borderRadius: 'var(--radius-sm)', overflow: 'hidden', aspectRatio: '4/3' }}>
-                  <img src={p} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                  <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} style={{
+                <div key={i} style={{
+                  position: 'relative', borderRadius: 'var(--radius-sm)', overflow: 'hidden', aspectRatio: '4/3',
+                  border: coverIndex === i ? '2px solid var(--accent)' : '2px solid transparent',
+                  cursor: 'pointer',
+                }} onClick={(e) => { e.stopPropagation(); setCoverIndex(i); }}>
+                  {files[i]?.type?.startsWith('video') ? (
+                    <video src={p} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+                  ) : (
+                    <img src={p} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                  )}
+                  {coverIndex === i && (
+                    <div style={{
+                      position: 'absolute', top: 6, left: 6, padding: '2px 8px',
+                      borderRadius: 100, background: 'var(--accent)', fontSize: 10,
+                      fontWeight: 600, color: '#000', letterSpacing: '0.04em',
+                    }}>ОБЛОЖКА</div>
+                  )}
+                  <button onClick={(e) => { e.stopPropagation(); removeFile(i); if (coverIndex >= i && coverIndex > 0) setCoverIndex(c => c - 1); }} style={{
                     position: 'absolute', top: 6, right: 6, width: 24, height: 24,
                     borderRadius: '50%', background: 'rgba(0,0,0,0.6)', display: 'flex',
                     alignItems: 'center', justifyContent: 'center',

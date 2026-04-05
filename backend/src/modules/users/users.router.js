@@ -7,6 +7,65 @@ import { shouldNotify } from '../../common/notifications.js';
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
+// ═══ DATA EXPORT (must be before /:username) ═══
+
+router.get('/me/export', authMiddleware, async (req, res) => {
+  const prisma = req.prisma;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        id: true, email: true, username: true, displayName: true, bio: true,
+        avatar: true, cover: true, website: true, location: true, skills: true,
+        specialization: true, languages: true, birthDate: true,
+        socialLinks: true, createdAt: true,
+      },
+    });
+    const projects = await prisma.project.findMany({
+      where: { authorId: req.userId },
+      select: { id: true, title: true, description: true, tags: true, tools: true, createdAt: true, media: { select: { url: true, type: true } } },
+    });
+    const comments = await prisma.comment.findMany({
+      where: { userId: req.userId },
+      select: { id: true, content: true, createdAt: true, projectId: true },
+    });
+    const likes = await prisma.like.findMany({
+      where: { userId: req.userId },
+      select: { projectId: true, createdAt: true },
+    });
+    res.json({ user, projects, comments, likes, exportedAt: new Date().toISOString() });
+  } catch (err) {
+    console.error('Export error:', err);
+    res.status(500).json({ error: { message: 'Failed to export data' } });
+  }
+});
+
+// ═══ DELETE ACCOUNT (must be before /:username) ═══
+
+router.delete('/me', authMiddleware, async (req, res) => {
+  const prisma = req.prisma;
+  try {
+    await prisma.notification.deleteMany({ where: { OR: [{ recipientId: req.userId }, { actorId: req.userId }] } });
+    await prisma.message.deleteMany({ where: { OR: [{ senderId: req.userId }, { receiverId: req.userId }] } });
+    await prisma.comment.deleteMany({ where: { userId: req.userId } });
+    await prisma.like.deleteMany({ where: { userId: req.userId } });
+    await prisma.follow.deleteMany({ where: { OR: [{ followerId: req.userId }, { followingId: req.userId }] } });
+    await prisma.challengeEntry.deleteMany({ where: { userId: req.userId } });
+    await prisma.collection.deleteMany({ where: { userId: req.userId } });
+    const projects = await prisma.project.findMany({ where: { authorId: req.userId }, select: { id: true } });
+    for (const p of projects) {
+      await prisma.media.deleteMany({ where: { projectId: p.id } });
+    }
+    await prisma.project.deleteMany({ where: { authorId: req.userId } });
+    await prisma.user.delete({ where: { id: req.userId } });
+    res.clearCookie('refreshToken');
+    res.json({ deleted: true });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    res.status(500).json({ error: { message: 'Failed to delete account' } });
+  }
+});
+
 // ═══ GET USER PROFILE ═══
 
 router.get('/:username', optionalAuth, async (req, res) => {
@@ -17,6 +76,7 @@ router.get('/:username', optionalAuth, async (req, res) => {
     select: {
       id: true, username: true, displayName: true, avatar: true, cover: true,
       bio: true, website: true, location: true, role: true, skills: true,
+      specialization: true, languages: true, birthDate: true,
       socialLinks: true, isVerified: true, createdAt: true,
       _count: { select: { projects: true, followers: true, following: true } },
     },
@@ -72,7 +132,7 @@ router.patch('/me', authMiddleware, upload.fields([
   { name: 'cover', maxCount: 1 },
 ]), async (req, res) => {
   const prisma = req.prisma;
-  const { displayName, bio, website, location, skills, socialLinks } = req.body;
+  const { displayName, bio, website, location, skills, socialLinks, specialization, languages, birthDate } = req.body;
 
   const data = {};
   if (displayName !== undefined) data.displayName = displayName;
@@ -80,6 +140,9 @@ router.patch('/me', authMiddleware, upload.fields([
   if (website !== undefined) data.website = website;
   if (location !== undefined) data.location = location;
   if (skills) data.skills = JSON.parse(skills);
+  if (specialization) data.specialization = JSON.parse(specialization);
+  if (languages) data.languages = JSON.parse(languages);
+  if (birthDate !== undefined) data.birthDate = birthDate ? new Date(birthDate) : null;
   if (socialLinks) data.socialLinks = JSON.parse(socialLinks);
 
   // Upload avatar/cover
@@ -96,6 +159,7 @@ router.patch('/me', authMiddleware, upload.fields([
     select: {
       id: true, username: true, displayName: true, avatar: true, cover: true,
       bio: true, website: true, location: true, skills: true, socialLinks: true,
+      specialization: true, languages: true, birthDate: true,
     },
   });
 

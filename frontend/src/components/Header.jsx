@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Avatar from '@radix-ui/react-avatar';
-import { Search, Bell, Plus, Settings, LogOut, User, ChevronDown } from 'lucide-react';
+import { Search, Bell, Plus, Settings, LogOut, User, ChevronDown, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAuthDialog } from '../context/AuthDialogContext';
 import { useToast } from '../context/ToastContext';
@@ -17,6 +17,7 @@ export default function Header() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -62,15 +63,15 @@ export default function Header() {
         </Link>
 
         <nav className="header-nav" style={{ display: 'flex', gap: 40, alignItems: 'center' }}>
-          {['Explore', 'Trending', 'Collections', 'Creators', 'Challenges'].map(item => (
+          {[['Проекты', '/projects'], ['Тренды', '/projects?sort=trending'], ['Коллекции', '/collections'], ['Авторы', '/search?type=users'], ['Челленджи', '/challenges']].map(([label, to]) => (
             <Link
-              key={item}
-              to={item === 'Explore' ? '/projects' : item === 'Trending' ? '/projects?sort=trending' : item === 'Creators' ? '/search?type=users' : `/${item.toLowerCase()}`}
+              key={label}
+              to={to}
               style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-2)', transition: 'color 0.4s' }}
               onMouseEnter={e => e.target.style.color = 'var(--text)'}
               onMouseLeave={e => e.target.style.color = 'var(--text-2)'}
             >
-              {item}
+              {label}
             </Link>
           ))}
         </nav>
@@ -86,13 +87,13 @@ export default function Header() {
                 <Bell size={16} color="var(--text-2)" />
               </button>
 
-              <button className="btn btn-primary btn-sm" onClick={() => navigate('/upload')}>
-                <Plus size={14} /> Upload
+              <button className="btn btn-primary btn-sm" onClick={() => navigate('/upload')} style={{ width: 36, height: 36, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
+                <Plus size={16} />
               </button>
 
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Avatar.Root style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
                       <Avatar.Image src={user.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <Avatar.Fallback style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--card)', color: 'var(--text-2)', fontSize: 13 }}>
@@ -121,11 +122,34 @@ export default function Header() {
           ) : (
             <>
               <button className="btn-ghost" onClick={() => { setAuthOpen(true); }}>Войти</button>
-              <button className="btn btn-primary btn-sm" onClick={() => { setAuthOpen(true); }}>Регистрация</button>
+              <button className="btn btn-primary btn-sm desktop-only" onClick={() => { setAuthOpen(true); }}>Регистрация</button>
+            </>
+          )}
+          <button className="btn-icon mobile-only" onClick={() => setMobileMenu(!mobileMenu)}>
+            {mobileMenu ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile menu overlay */}
+      {mobileMenu && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999,
+          background: 'rgba(11,11,13,0.95)', backdropFilter: 'blur(20px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24,
+        }}>
+          {[['Проекты', '/projects'], ['Тренды', '/projects?sort=trending'], ['Коллекции', '/collections'], ['Авторы', '/search?type=users'], ['Челленджи', '/challenges']].map(([label, to]) => (
+            <Link key={label} to={to} onClick={() => setMobileMenu(false)} style={{ fontSize: 24, fontFamily: 'var(--font-display)', color: 'var(--text-2)' }}>{label}</Link>
+          ))}
+          {user && (
+            <>
+              <Link to={`/profile/${user.username}`} onClick={() => setMobileMenu(false)} style={{ fontSize: 24, fontFamily: 'var(--font-display)', color: 'var(--text-2)' }}>Профиль</Link>
+              <Link to="/settings" onClick={() => setMobileMenu(false)} style={{ fontSize: 24, fontFamily: 'var(--font-display)', color: 'var(--text-2)' }}>Настройки</Link>
+              <button onClick={() => { handleLogout(); setMobileMenu(false); }} style={{ fontSize: 24, fontFamily: 'var(--font-display)', color: '#ff6b6b' }}>Выйти</button>
             </>
           )}
         </div>
-      </header>
+      )}
 
       <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
