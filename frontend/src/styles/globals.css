@@ -63,6 +63,10 @@
 }
 
 /* ── Reset ── */
+html, body {
+  cursor: none;
+}
+
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -86,11 +90,15 @@ body {
   min-height: 100vh;
 }
 
-a { text-decoration: none; color: inherit; }
-button { border: none; background: none; cursor: pointer; font-family: inherit; color: inherit; }
+a { text-decoration: none; color: inherit; cursor: none; }
+button { border: none; background: none; cursor: none; font-family: inherit; color: inherit; }
 img { display: block; max-width: 100%; }
-input, textarea, select { font-family: inherit; }
+input, textarea, select { font-family: inherit; cursor: none; }
 ::selection { background: var(--accent); color: var(--bg); }
+
+@media (hover: hover) {
+  *, *::before, *::after { cursor: none !important; }
+}
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; }
