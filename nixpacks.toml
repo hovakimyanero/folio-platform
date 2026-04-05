@@ -5,4 +5,4 @@ nixPkgs = ["nodejs_20"]
 cmds = ["cd backend && npm install"]
 
 [start]
-cmd = "cd backend && npx prisma migrate deploy && node src/index.js"
+cmd = "cd backend && npx prisma db push && node src/index.js"
