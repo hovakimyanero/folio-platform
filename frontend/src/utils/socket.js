@@ -13,6 +13,7 @@ function getSocketUrl() {
     const url = new URL(apiUrl);
     return url.origin;
   } catch {
+    // Malformed URL – fall back to same-origin (works in dev via Vite proxy)
     return '/';
   }
 }
