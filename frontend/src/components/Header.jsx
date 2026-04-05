@@ -64,7 +64,7 @@ export default function Header() {
           {['Explore', 'Trending', 'Collections', 'Creators', 'Challenges'].map(item => (
             <Link
               key={item}
-              to={item === 'Explore' ? '/projects' : item === 'Creators' ? '/search?type=users' : `/${item.toLowerCase()}`}
+              to={item === 'Explore' ? '/projects' : item === 'Trending' ? '/projects?sort=trending' : item === 'Creators' ? '/search?type=users' : `/${item.toLowerCase()}`}
               style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-2)', transition: 'color 0.4s' }}
               onMouseEnter={e => e.target.style.color = 'var(--text)'}
               onMouseLeave={e => e.target.style.color = 'var(--text-2)'}
