@@ -88,12 +88,10 @@ router.post('/register',
         },
       });
 
-      // Send verification email
-      try {
-        await sendVerificationEmail(email, verifyToken);
-      } catch (emailErr) {
+      // Send verification email (non-blocking)
+      sendVerificationEmail(email, verifyToken).catch(emailErr => {
         console.error('Failed to send verification email:', emailErr);
-      }
+      });
 
       // Generate tokens
       const { accessToken, refreshToken } = generateTokens(user.id, user.role);
@@ -283,11 +281,10 @@ router.post('/forgot-password',
       },
     });
 
-    try {
-      await sendPasswordResetEmail(email, token);
-    } catch (err) {
+    // Send reset email (non-blocking)
+    sendPasswordResetEmail(email, token).catch(err => {
       console.error('Failed to send reset email:', err);
-    }
+    });
 
     res.json({ message: 'If email exists, reset link was sent' });
   }

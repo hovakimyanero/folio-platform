@@ -32,10 +32,15 @@ const prisma = new PrismaClient();
 const app = express();
 const server = createServer(app);
 
+// ═══ Allowed origins ═══
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(u => u.trim().replace(/\/+$/, ''))
+  : [];
+
 // ═══ Socket.io ═══
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: allowedOrigins,
     credentials: true,
   },
 });
@@ -46,7 +51,10 @@ socketHandler(io, prisma);
 app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(null, false);
+  },
   credentials: true,
 }));
 app.use(cookieParser());
