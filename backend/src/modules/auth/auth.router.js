@@ -249,8 +249,8 @@ router.get('/me', authMiddleware, async (req, res) => {
     where: { id: req.userId },
     select: {
       id: true, email: true, username: true, displayName: true,
-      avatar: true, role: true, isVerified: true, isAdmin: true,
-      bio: true, website: true, location: true, skills: true, socialLinks: true,
+      avatar: true, cover: true, role: true, isVerified: true, isAdmin: true,
+      bio: true, website: true, location: true, skills: true, socialLinks: true, notificationPrefs: true,
       _count: { select: { projects: true, followers: true, following: true } },
     },
   });

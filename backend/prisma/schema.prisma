@@ -31,6 +31,7 @@ model User {
 
   skills        String[] @default([])
   socialLinks   Json?    // { twitter, instagram, dribbble, linkedin, github }
+  notificationPrefs Json? // { likes: true, comments: true, follows: true, messages: true }
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -51,6 +52,8 @@ model User {
   reportedReports Report[] @relation("reported")
   sessions      Session[]
   passwordResets PasswordReset[]
+  blogPosts     BlogPost[]
+  jobs          Job[]
 
   @@index([email])
   @@index([username])
@@ -409,4 +412,65 @@ model ProjectView {
 
   @@index([projectId])
   @@index([createdAt])
+}
+
+// ═══════════════════════════════════════
+// BLOG
+// ═══════════════════════════════════════
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  excerpt     String?  @db.Text
+  cover       String?
+  published   Boolean  @default(true)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([createdAt(sort: Desc)])
+}
+
+// ═══════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  type        String   // TOP_CREATOR, NEW_FEATURE, MILESTONE
+  entityType  String?  // "user", "project"
+  entityId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+}
+
+// ═══════════════════════════════════════
+// JOBS
+// ═══════════════════════════════════════
+
+model Job {
+  id          String   @id @default(cuid())
+  title       String
+  company     String
+  location    String?
+  type        String   @default("FULL_TIME") // FULL_TIME, PART_TIME, FREELANCE, REMOTE
+  description String   @db.Text
+  salary      String?
+  contactEmail String?
+  contactUrl  String?
+  published   Boolean  @default(true)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([createdAt(sort: Desc)])
 }

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware, optionalAuth } from '../../common/auth.middleware.js';
 import multer from 'multer';
 import { uploadFile } from '../../common/upload.js';
+import { shouldNotify } from '../../common/notifications.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -101,6 +102,28 @@ router.patch('/me', authMiddleware, upload.fields([
   res.json({ user });
 });
 
+// ═══ UPDATE NOTIFICATION PREFS ═══
+
+router.patch('/me/notifications', authMiddleware, async (req, res) => {
+  const prisma = req.prisma;
+  const { likes, comments, follows, messages } = req.body;
+
+  const prefs = {
+    likes: likes !== false,
+    comments: comments !== false,
+    follows: follows !== false,
+    messages: messages !== false,
+  };
+
+  const user = await prisma.user.update({
+    where: { id: req.userId },
+    data: { notificationPrefs: prefs },
+    select: { notificationPrefs: true },
+  });
+
+  res.json({ notificationPrefs: user.notificationPrefs });
+});
+
 // ═══ FOLLOW ═══
 
 router.post('/:id/follow', authMiddleware, async (req, res) => {
@@ -114,15 +137,17 @@ router.post('/:id/follow', authMiddleware, async (req, res) => {
       data: { followerId: req.userId, followingId: req.params.id },
     });
 
-    // Notification
-    await prisma.notification.create({
-      data: {
-        type: 'FOLLOW',
-        recipientId: req.params.id,
-        actorId: req.userId,
-      },
-    });
-    req.io?.to(req.params.id).emit('notification', { type: 'FOLLOW' });
+    // Notification (respecting prefs)
+    if (await shouldNotify(prisma, req.params.id, 'FOLLOW')) {
+      await prisma.notification.create({
+        data: {
+          type: 'FOLLOW',
+          recipientId: req.params.id,
+          actorId: req.userId,
+        },
+      });
+      req.io?.to(req.params.id).emit('notification', { type: 'FOLLOW' });
+    }
 
     res.json({ following: true });
   } catch (err) {

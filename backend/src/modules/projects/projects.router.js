@@ -3,6 +3,7 @@ import { body, query, validationResult } from 'express-validator';
 import { authMiddleware, optionalAuth } from '../../common/auth.middleware.js';
 import multer from 'multer';
 import { uploadFile } from '../../common/upload.js';
+import { shouldNotify } from '../../common/notifications.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -283,9 +284,9 @@ router.post('/:id/like', authMiddleware, async (req, res) => {
       data: { likeCount: { increment: 1 } },
     });
 
-    // Create notification
+    // Create notification (respecting prefs)
     const project = await prisma.project.findUnique({ where: { id: req.params.id }, select: { authorId: true } });
-    if (project && project.authorId !== req.userId) {
+    if (project && project.authorId !== req.userId && await shouldNotify(prisma, project.authorId, 'LIKE')) {
       await prisma.notification.create({
         data: {
           type: 'LIKE',
@@ -295,7 +296,6 @@ router.post('/:id/like', authMiddleware, async (req, res) => {
           entityId: req.params.id,
         },
       });
-      // Emit real-time notification
       req.io?.to(project.authorId).emit('notification', { type: 'LIKE' });
     }
 

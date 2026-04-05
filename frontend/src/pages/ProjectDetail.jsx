@@ -141,7 +141,15 @@ export default function ProjectDetail() {
 
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <button className="btn-icon"><Share2 size={16} color="var(--text-2)" /></button>
+                <button className="btn-icon" onClick={async () => {
+                  const url = window.location.href;
+                  if (navigator.share) {
+                    try { await navigator.share({ title: project.title, url }); } catch {}
+                  } else {
+                    await navigator.clipboard.writeText(url);
+                    showToast('Ссылка скопирована', 'success');
+                  }
+                }}><Share2 size={16} color="var(--text-2)" /></button>
               </Tooltip.Trigger>
               <Tooltip.Content sideOffset={6}>Поделиться</Tooltip.Content>
             </Tooltip.Root>

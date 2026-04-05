@@ -1,6 +1,7 @@
 // ═══ COMMENTS ROUTER ═══
 import { Router } from 'express';
 import { authMiddleware, optionalAuth } from '../../common/auth.middleware.js';
+import { shouldNotify } from '../../common/notifications.js';
 
 const router = Router();
 
@@ -38,9 +39,9 @@ router.post('/projects/:projectId/comments', authMiddleware, async (req, res) =>
     data: { commentCount: { increment: 1 } },
   });
 
-  // Notification
+  // Notification (respecting prefs)
   const project = await req.prisma.project.findUnique({ where: { id: req.params.projectId }, select: { authorId: true } });
-  if (project && project.authorId !== req.userId) {
+  if (project && project.authorId !== req.userId && await shouldNotify(req.prisma, project.authorId, 'COMMENT')) {
     await req.prisma.notification.create({
       data: { type: 'COMMENT', recipientId: project.authorId, actorId: req.userId, entityType: 'project', entityId: req.params.projectId },
     });

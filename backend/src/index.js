@@ -20,6 +20,9 @@ import likesRouter from './modules/likes/likes.router.js';
 import messagesRouter from './modules/messages/messages.router.js';
 import notificationsRouter from './modules/notifications/notifications.router.js';
 import adminRouter from './modules/admin/admin.router.js';
+import blogRouter from './modules/blog/blog.router.js';
+import eventsRouter from './modules/events/events.router.js';
+import jobsRouter from './modules/jobs/jobs.router.js';
 import { updateTrendScores } from './modules/projects/projects.service.js';
 import { authMiddleware } from './common/auth.middleware.js';
 import { socketHandler } from './modules/messages/socket.handler.js';
@@ -82,6 +85,9 @@ app.use('/api/likes', authMiddleware, likesRouter);
 app.use('/api/messages', authMiddleware, messagesRouter);
 app.use('/api/notifications', authMiddleware, notificationsRouter);
 app.use('/api/admin', authMiddleware, adminRouter);
+app.use('/api/blog', blogRouter);
+app.use('/api/events', eventsRouter);
+app.use('/api/jobs', jobsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

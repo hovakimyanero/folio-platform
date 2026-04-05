@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Switch from '@radix-ui/react-switch';
+import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Save, Upload } from 'lucide-react';
+import { Save, Upload, Camera } from 'lucide-react';
 
 export default function Settings() {
   const { user, updateProfile } = useAuth();
@@ -15,6 +16,34 @@ export default function Settings() {
   const [skills, setSkills] = useState(user?.skills?.join(', ') || '');
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState('profile');
+  const avatarRef = useRef(null);
+  const coverRef = useRef(null);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
+  const [coverPreview, setCoverPreview] = useState(user?.cover || null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
+
+  const defaultPrefs = { likes: true, comments: true, follows: true, messages: true };
+  const [notifPrefs, setNotifPrefs] = useState(() => ({ ...defaultPrefs, ...(user?.notificationPrefs || {}) }));
+  const [savingNotifs, setSavingNotifs] = useState(false);
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setAvatarFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setAvatarPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleCoverChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setCoverFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setCoverPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -25,11 +54,41 @@ export default function Settings() {
       formData.append('website', website);
       formData.append('location', location);
       formData.append('skills', JSON.stringify(skills.split(',').map(s => s.trim()).filter(Boolean)));
+      if (avatarFile) formData.append('avatar', avatarFile);
+      if (coverFile) formData.append('cover', coverFile);
       await updateProfile(formData);
+      setAvatarFile(null);
+      setCoverFile(null);
       showToast('Профиль обновлён', 'success');
     } catch { showToast('Ошибка сохранения', 'error'); }
     finally { setSaving(false); }
   };
+
+  const saveNotifPrefs = async () => {
+    setSavingNotifs(true);
+    try {
+      await api.patch('/users/me/notifications', notifPrefs);
+      showToast('Настройки уведомлений сохранены', 'success');
+    } catch { showToast('Ошибка сохранения', 'error'); }
+    finally { setSavingNotifs(false); }
+  };
+
+  const togglePref = (key) => {
+    setNotifPrefs(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const switchStyle = (checked) => ({
+    width: 42, height: 24, borderRadius: 100, position: 'relative', cursor: 'pointer',
+    background: checked ? 'var(--accent)' : 'var(--card)',
+    border: `1px solid ${checked ? 'var(--accent)' : 'var(--glass-border)'}`,
+    transition: 'background 0.2s',
+  });
+
+  const thumbStyle = (checked) => ({
+    display: 'block', width: 18, height: 18, borderRadius: '50%',
+    background: 'white', transition: 'transform 0.2s',
+    transform: checked ? 'translateX(20px)' : 'translateX(2px)',
+  });
 
   return (
     <div style={{ paddingTop: 120, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
@@ -45,6 +104,53 @@ export default function Settings() {
 
           <Tabs.Content value="profile">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {/* Cover upload */}
+              <div>
+                <label className="input-label">Обложка профиля</label>
+                <div
+                  onClick={() => coverRef.current?.click()}
+                  style={{
+                    height: 160, borderRadius: 'var(--radius-lg)', cursor: 'pointer',
+                    background: coverPreview ? `url(${coverPreview}) center/cover` : 'linear-gradient(135deg, var(--card), var(--surface))',
+                    border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'opacity 0.3s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >
+                  <div style={{ background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: 12 }}>
+                    <Camera size={20} color="white" />
+                  </div>
+                </div>
+                <input ref={coverRef} type="file" accept="image/*" onChange={handleCoverChange} style={{ display: 'none' }} />
+              </div>
+
+              {/* Avatar upload */}
+              <div>
+                <label className="input-label">Аватар</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div
+                    onClick={() => avatarRef.current?.click()}
+                    style={{
+                      width: 80, height: 80, borderRadius: '50%', cursor: 'pointer', overflow: 'hidden',
+                      background: avatarPreview ? `url(${avatarPreview}) center/cover` : 'var(--card)',
+                      border: '2px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'opacity 0.3s', flexShrink: 0,
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                  >
+                    {avatarPreview ? (
+                      <img src={avatarPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                    ) : (
+                      <Camera size={20} color="var(--text-3)" />
+                    )}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-3)' }}>Нажмите чтобы загрузить фото</div>
+                </div>
+                <input ref={avatarRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
+              </div>
+
               <div><label className="input-label">Имя</label><input className="input" value={displayName} onChange={e => setDisplayName(e.target.value)} /></div>
               <div><label className="input-label">О себе</label><textarea className="input" rows={4} value={bio} onChange={e => setBio(e.target.value)} style={{ resize: 'vertical' }} /></div>
               <div><label className="input-label">Сайт</label><input className="input" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://" /></div>
@@ -54,7 +160,25 @@ export default function Settings() {
             </div>
           </Tabs.Content>
           <Tabs.Content value="password"><div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}><div><label className="input-label">Текущий пароль</label><input className="input" type="password" /></div><div><label className="input-label">Новый пароль</label><input className="input" type="password" /></div><div><label className="input-label">Подтвердите пароль</label><input className="input" type="password" /></div><button className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>Обновить пароль</button></div></Tabs.Content>
-          <Tabs.Content value="notifications"><div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>{['Лайки', 'Комментарии', 'Подписки', 'Сообщения'].map(n => (<div key={n} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--glass-border)' }}><span style={{ fontSize: 14 }}>{n}</span><Switch.Root defaultChecked style={{ width: 42, height: 24, borderRadius: 100, background: 'var(--card)', border: '1px solid var(--glass-border)', position: 'relative', cursor: 'pointer' }}><Switch.Thumb style={{ display: 'block', width: 18, height: 18, borderRadius: '50%', background: 'var(--accent)', transition: 'transform 0.2s', transform: 'translateX(2px)' }} /></Switch.Root></div>))}</div></Tabs.Content>
+          <Tabs.Content value="notifications">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {[['likes', 'Лайки'], ['comments', 'Комментарии'], ['follows', 'Подписки'], ['messages', 'Сообщения']].map(([key, label]) => (
+                <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--glass-border)' }}>
+                  <span style={{ fontSize: 14 }}>{label}</span>
+                  <Switch.Root
+                    checked={notifPrefs[key]}
+                    onCheckedChange={() => togglePref(key)}
+                    style={switchStyle(notifPrefs[key])}
+                  >
+                    <Switch.Thumb style={thumbStyle(notifPrefs[key])} />
+                  </Switch.Root>
+                </div>
+              ))}
+              <button className="btn btn-primary" onClick={saveNotifPrefs} disabled={savingNotifs} style={{ alignSelf: 'flex-start', marginTop: 8, opacity: savingNotifs ? 0.6 : 1 }}>
+                <Save size={14} /> {savingNotifs ? 'Сохранение...' : 'Сохранить настройки'}
+              </button>
+            </div>
+          </Tabs.Content>
           <Tabs.Content value="privacy"><p style={{ fontSize: 14, color: 'var(--text-2)' }}>Настройки приватности будут доступны в ближайшем обновлении.</p></Tabs.Content>
         </Tabs.Root>
       </div>

@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 
 const columns = [
-  { title: 'Платформа', links: [{ label: 'Explore', to: '/projects' }, { label: 'Trending', to: '/projects?sort=trending' }, { label: 'Collections', to: '/collections' }, { label: 'Challenges', to: '/challenges' }] },
-  { title: 'Сообщество', links: [{ label: 'Блог' }, { label: 'Подкаст' }, { label: 'События' }, { label: 'Вакансии' }] },
-  { title: 'Поддержка', links: [{ label: 'FAQ' }, { label: 'Контакты' }, { label: 'Обратная связь' }] },
-  { title: 'Правовое', links: [{ label: 'Условия' }, { label: 'Конфиденциальность' }, { label: 'Cookies' }] },
+  { title: 'Платформа', links: [{ label: 'Обзор', to: '/projects' }, { label: 'Тренды', to: '/projects?sort=trending' }, { label: 'Коллекции', to: '/collections' }, { label: 'Челленджи', to: '/challenges' }] },
+  { title: 'Сообщество', links: [{ label: 'Блог', to: '/blog' }, { label: 'События', to: '/events' }, { label: 'Вакансии', to: '/jobs' }] },
+  { title: 'Поддержка', links: [{ label: 'FAQ', to: '/faq' }] },
+  { title: 'Правовое', links: [{ label: 'Условия', to: '/terms' }, { label: 'Конфиденциальность', to: '/privacy' }, { label: 'Cookies', to: '/cookies' }] },
 ];
 
 export default function Footer() {
@@ -25,7 +25,6 @@ export default function Footer() {
               {col.title}
             </h4>
             {col.links.map(link => (
-              link.to ? (
                 <Link
                   key={link.label}
                   to={link.to}
@@ -35,14 +34,6 @@ export default function Footer() {
                 >
                   {link.label}
                 </Link>
-              ) : (
-                <span
-                  key={link.label}
-                  style={{ display: 'block', fontSize: 13, color: 'var(--text-3)', marginBottom: 12, cursor: 'default' }}
-                >
-                  {link.label}
-                </span>
-              )
             ))}
           </div>
         ))}
