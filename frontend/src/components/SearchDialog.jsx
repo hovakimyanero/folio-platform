@@ -26,10 +26,29 @@ export default function SearchDialog({ open, onOpenChange }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay />
+        <Dialog.Overlay style={{
+          background: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 5000,
+        }} />
         <Dialog.Content style={{
-          width: 'min(600px, 90vw)', padding: 0, top: '20%', transform: 'translateX(-50%)',
+          width: 'min(600px, 90vw)',
+          padding: 0,
+          top: '20%',
+          transform: 'translateX(-50%)',
           overflow: 'hidden',
+          background: 'rgba(18, 18, 24, 0.9)',
+          backdropFilter: 'blur(40px) saturate(1.6)',
+          WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+          borderRadius: 'var(--radius-xl)',
+          border: '1px solid var(--glass-border)',
+          boxShadow: 'var(--shadow-xl)',
+          position: 'fixed',
+          left: '50%',
+          zIndex: 5001,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 24px', borderBottom: '1px solid var(--glass-border)' }}>
             <SearchIcon size={18} color="var(--text-3)" />

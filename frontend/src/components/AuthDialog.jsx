@@ -49,8 +49,31 @@ export default function AuthDialog({ open, onOpenChange }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content style={{ width: 'min(440px, 90vw)', padding: 48 }}>
+        <Dialog.Overlay style={{
+          background: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 5000,
+        }} />
+        <Dialog.Content style={{
+          width: 'min(440px, 90vw)',
+          padding: 48,
+          background: 'rgba(18, 18, 24, 0.9)',
+          backdropFilter: 'blur(40px) saturate(1.6)',
+          WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+          borderRadius: 'var(--radius-xl)',
+          border: '1px solid var(--glass-border)',
+          boxShadow: 'var(--shadow-xl)',
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 5001,
+          maxHeight: '90vh',
+          overflowY: 'auto',
+        }}>
           <Dialog.Close asChild>
             <button className="btn-icon" style={{ position: 'absolute', top: 16, right: 16 }}>
               <X size={14} />
