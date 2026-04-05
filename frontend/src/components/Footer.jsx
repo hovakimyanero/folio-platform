@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 
 const columns = [
   { title: 'Платформа', links: [{ label: 'Explore', to: '/projects' }, { label: 'Trending', to: '/projects?sort=trending' }, { label: 'Collections', to: '/collections' }, { label: 'Challenges', to: '/challenges' }] },
-  { title: 'Сообщество', links: [{ label: 'Блог', to: '#' }, { label: 'Подкаст', to: '#' }, { label: 'События', to: '#' }, { label: 'Вакансии', to: '#' }] },
-  { title: 'Поддержка', links: [{ label: 'FAQ', to: '#' }, { label: 'Контакты', to: '#' }, { label: 'Обратная связь', to: '#' }] },
-  { title: 'Правовое', links: [{ label: 'Условия', to: '#' }, { label: 'Конфиденциальность', to: '#' }, { label: 'Cookies', to: '#' }] },
+  { title: 'Сообщество', links: [{ label: 'Блог' }, { label: 'Подкаст' }, { label: 'События' }, { label: 'Вакансии' }] },
+  { title: 'Поддержка', links: [{ label: 'FAQ' }, { label: 'Контакты' }, { label: 'Обратная связь' }] },
+  { title: 'Правовое', links: [{ label: 'Условия' }, { label: 'Конфиденциальность' }, { label: 'Cookies' }] },
 ];
 
 export default function Footer() {
@@ -25,15 +25,24 @@ export default function Footer() {
               {col.title}
             </h4>
             {col.links.map(link => (
-              <Link
-                key={link.label}
-                to={link.to}
-                style={{ display: 'block', fontSize: 13, color: 'var(--text-2)', marginBottom: 12, transition: 'color 0.3s' }}
-                onMouseEnter={e => e.target.style.color = 'var(--text)'}
-                onMouseLeave={e => e.target.style.color = 'var(--text-2)'}
-              >
-                {link.label}
-              </Link>
+              link.to ? (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  style={{ display: 'block', fontSize: 13, color: 'var(--text-2)', marginBottom: 12, transition: 'color 0.3s' }}
+                  onMouseEnter={e => e.target.style.color = 'var(--text)'}
+                  onMouseLeave={e => e.target.style.color = 'var(--text-2)'}
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <span
+                  key={link.label}
+                  style={{ display: 'block', fontSize: 13, color: 'var(--text-3)', marginBottom: 12, cursor: 'default' }}
+                >
+                  {link.label}
+                </span>
+              )
             ))}
           </div>
         ))}

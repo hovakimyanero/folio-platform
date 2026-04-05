@@ -82,7 +82,7 @@ export default function AuthDialog({ open, onOpenChange }) {
             <div style={{ flex: 1, height: 1, background: 'var(--glass-border)' }} />
           </div>
 
-          <div onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {mode === 'register' && (
               <div>
                 <label className="input-label">Username</label>
@@ -106,13 +106,13 @@ export default function AuthDialog({ open, onOpenChange }) {
 
             <button
               className="btn btn-primary"
-              onClick={handleSubmit}
+              type="submit"
               disabled={loading}
               style={{ width: '100%', marginTop: 4, opacity: loading ? 0.6 : 1, borderRadius: 'var(--radius-sm)' }}
             >
               {loading ? 'Загрузка...' : mode === 'login' ? 'Войти' : 'Создать аккаунт'}
             </button>
-          </div>
+          </form>
 
           <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: 'var(--text-3)' }}>
             {mode === 'login' ? 'Нет аккаунта? ' : 'Уже есть аккаунт? '}

@@ -118,8 +118,8 @@ export default function Header() {
             </>
           ) : (
             <>
-              <button className="btn-ghost" onClick={() => setAuthOpen(true)}>Войти</button>
-              <button className="btn btn-primary btn-sm" onClick={() => setAuthOpen(true)}>Регистрация</button>
+              <button className="btn-ghost" onClick={() => { setAuthOpen(true); }}>Войти</button>
+              <button className="btn btn-primary btn-sm" onClick={() => { setAuthOpen(true); }}>Регистрация</button>
             </>
           )}
         </div>
