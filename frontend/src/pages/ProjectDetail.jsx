@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Heart, Eye, MessageCircle, Share2, Bookmark, UserPlus, UserCheck, ArrowLeft } from 'lucide-react';
+import { Heart, Eye, MessageCircle, Share2, Bookmark, UserPlus, UserCheck, ArrowLeft, Trash2 } from 'lucide-react';
 
 export default function ProjectDetail() {
   const { id } = useParams();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [similar, setSimilar] = useState([]);
   const [comments, setComments] = useState([]);
@@ -78,6 +79,17 @@ export default function ProjectDetail() {
     }
   };
 
+  const deleteProject = async () => {
+    if (!confirm('Удалить проект? Это действие нельзя отменить.')) return;
+    try {
+      await api.delete(`/projects/${id}`);
+      showToast('Проект удалён', 'success');
+      navigate('/projects');
+    } catch {
+      showToast('Ошибка удаления', 'error');
+    }
+  };
+
   if (loading) return <div style={{ minHeight: '100vh', paddingTop: 200, textAlign: 'center', color: 'var(--text-3)' }}>Загрузка...</div>;
   if (!project) return <div style={{ minHeight: '100vh', paddingTop: 200, textAlign: 'center' }}><h2>Проект не найден</h2></div>;
 
@@ -138,6 +150,17 @@ export default function ProjectDetail() {
               <button className={`btn ${following ? 'btn-secondary' : 'btn-primary'} btn-sm`} onClick={toggleFollow}>
                 {following ? <><UserCheck size={14} /> Following</> : <><UserPlus size={14} /> Follow</>}
               </button>
+            )}
+
+            {user && project.author.id === user.id && (
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <button onClick={deleteProject} className="btn-icon" style={{ borderColor: '#ef4444' }}>
+                    <Trash2 size={16} color="#ef4444" />
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Content sideOffset={6}>Удалить проект</Tooltip.Content>
+              </Tooltip.Root>
             )}
           </div>
         </div>
