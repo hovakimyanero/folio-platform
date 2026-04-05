@@ -403,5 +403,55 @@ input, textarea, select { font-family: inherit; }
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .section { padding: 80px 20px; }
-  .container { padding: 0 20px; }
+  .container { padding: 0 16px; }
+
+  /* Header */
+  .header-nav { display: none !important; }
+  .header-inner { padding-left: 20px !important; padding-right: 20px !important; }
+
+  /* Footer */
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 32px !important;
+  }
+  .footer-inner { padding: 48px 20px 32px !important; }
+  .footer-brand { grid-column: 1 / -1; }
+
+  /* Page headings */
+  .page-title { font-size: 32px !important; }
+  .hero-title { font-size: clamp(32px, 8vw, 72px) !important; }
+  .hero-section { padding: 120px 20px 80px !important; }
+  .hero-stats { gap: 32px !important; }
+  .hero-stat-number { font-size: 28px !important; }
+
+  /* Grids */
+  .project-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .project-grid-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .featured-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Messages layout */
+  .messages-sidebar { display: none !important; }
+  .messages-sidebar.active { display: flex !important; }
+  .messages-layout { flex-direction: column !important; }
+
+  /* Section padding */
+  .section-padded { padding-left: 20px !important; padding-right: 20px !important; }
+
+  /* CTA */
+  .cta-section { padding: 100px 20px !important; }
+  .cta-title { font-size: 32px !important; }
+  .cta-buttons { flex-direction: column !important; align-items: center !important; }
+
+  /* Profile */
+  .profile-cover { height: 180px !important; }
+  .profile-avatar { width: 80px !important; height: 80px !important; }
+
+  /* Upload */
+  .upload-container { padding: 0 16px 60px !important; }
 }

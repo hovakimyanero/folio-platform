@@ -18,7 +18,7 @@ export default function Challenges() {
   return (
     <div style={{ paddingTop: 120, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
       <div className="container">
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em', marginBottom: 48 }}>Челленджи</h1>
+        <h1 className="page-title" style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em', marginBottom: 48 }}>Челленджи</h1>
         {challenges.length === 0 ? (
           <div className="empty-state"><Trophy size={64} color="var(--text-3)" style={{ opacity: 0.2, margin: '0 auto 24px' }} /><h3 className="empty-state-title">Нет активных челленджей</h3><p className="empty-state-text">Скоро появятся новые конкурсы.</p></div>
         ) : (

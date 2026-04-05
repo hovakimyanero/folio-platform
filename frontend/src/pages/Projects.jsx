@@ -50,7 +50,7 @@ export default function Projects() {
             <Link to="/upload" className="btn btn-primary">Загрузить проект</Link>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+          <div className="project-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
             {projects.map(p => (
               <Link key={p.id} to={`/projects/${p.id}`} style={{
                 borderRadius: 'var(--radius-sm)', overflow: 'hidden',

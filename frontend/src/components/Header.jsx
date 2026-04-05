@@ -44,6 +44,7 @@ export default function Header() {
   return (
     <>
       <header
+        className="header-inner"
         style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
           padding: scrolled ? '12px 48px' : '20px 48px',
@@ -59,7 +60,7 @@ export default function Header() {
           Folio<span style={{ color: 'var(--accent)' }}>.</span>
         </Link>
 
-        <nav style={{ display: 'flex', gap: 40, alignItems: 'center' }}>
+        <nav className="header-nav" style={{ display: 'flex', gap: 40, alignItems: 'center' }}>
           {['Explore', 'Trending', 'Collections', 'Creators', 'Challenges'].map(item => (
             <Link
               key={item}

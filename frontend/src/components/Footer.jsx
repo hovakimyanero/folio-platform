@@ -9,9 +9,9 @@ const columns = [
 
 export default function Footer() {
   return (
-    <footer style={{ borderTop: '1px solid var(--glass-border)', padding: '80px 48px 40px', position: 'relative', zIndex: 1 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 48, marginBottom: 64 }}>
-        <div style={{ maxWidth: 260 }}>
+    <footer className="footer-inner" style={{ borderTop: '1px solid var(--glass-border)', padding: '80px 48px 40px', position: 'relative', zIndex: 1 }}>
+      <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 48, marginBottom: 64 }}>
+        <div className="footer-brand" style={{ maxWidth: 260 }}>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, marginBottom: 16 }}>
             Folio<span style={{ color: 'var(--accent)' }}>.</span>
           </div>

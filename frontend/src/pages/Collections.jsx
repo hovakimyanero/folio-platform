@@ -24,13 +24,13 @@ export default function Collections() {
     <div style={{ paddingTop: 120, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 48 }}>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em' }}>Коллекции</h1>
+          <h1 className="page-title" style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em' }}>Коллекции</h1>
           {user && <button className="btn btn-primary" onClick={() => setCreateOpen(true)}><Plus size={14} /> Создать</button>}
         </div>
         {collections.length === 0 ? (
           <div className="empty-state"><FolderOpen size={64} color="var(--text-3)" style={{ opacity: 0.2, margin: '0 auto 24px' }} /><h3 className="empty-state-title">Нет коллекций</h3><p className="empty-state-text">Создайте первую коллекцию и добавляйте проекты.</p></div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+          <div className="project-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
             {collections.map(c => (
               <Link key={c.id} to={`/collections/${c.id}`} style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', background: 'var(--card)', border: '1px solid var(--glass-border)', height: 240, position: 'relative', display: 'block' }}>
                 {c.cover && <img src={c.cover} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.6)' }} alt="" />}

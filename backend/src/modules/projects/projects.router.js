@@ -7,6 +7,18 @@ import { uploadFile } from '../../common/upload.js';
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
+// ═══ GET CATEGORIES ═══
+
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await req.prisma.category.findMany({ orderBy: { order: 'asc' } });
+    res.json({ categories });
+  } catch (err) {
+    console.error('Get categories error:', err);
+    res.status(500).json({ error: { message: 'Failed to fetch categories' } });
+  }
+});
+
 // ═══ GET PROJECTS (paginated, sorted) ═══
 
 router.get('/', optionalAuth, async (req, res) => {
@@ -101,16 +113,6 @@ router.get('/:id', optionalAuth, async (req, res) => {
       data: { viewCount: { increment: 1 } },
     });
 
-    // Track view for analytics
-    await prisma.projectView.create({
-      data: {
-        projectId: project.id,
-        userId: req.userId || null,
-        viewerIp: req.ip,
-        userAgent: req.headers['user-agent'],
-      },
-    });
-
     // Check if liked by current user
     let isLiked = false;
     let isFollowing = false;
@@ -172,6 +174,18 @@ router.post('/', authMiddleware, upload.array('media', 20), async (req, res) => 
   }
 
   try {
+    // Resolve category by name if needed
+    let resolvedCategoryId = categoryId || null;
+    if (categoryId && !categoryId.match(/^c[a-z0-9]{24,}$/)) {
+      // categoryId is a name, find or create
+      const slug = categoryId.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      let cat = await prisma.category.findUnique({ where: { slug } });
+      if (!cat) {
+        cat = await prisma.category.create({ data: { name: categoryId, slug } });
+      }
+      resolvedCategoryId = cat.id;
+    }
+
     // Upload files to S3
     const mediaUrls = [];
     if (req.files && req.files.length > 0) {
@@ -189,7 +203,7 @@ router.post('/', authMiddleware, upload.array('media', 20), async (req, res) => 
         tags: tags ? JSON.parse(tags) : [],
         tools: tools ? JSON.parse(tools) : [],
         colors: colors ? JSON.parse(colors) : [],
-        categoryId: categoryId || null,
+        categoryId: resolvedCategoryId,
         authorId: req.userId,
         published: true,
         media: {
