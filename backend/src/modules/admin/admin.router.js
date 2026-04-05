@@ -134,4 +134,56 @@ router.get('/users', async (req, res) => {
   res.json({ users, total });
 });
 
+// ═══ CHALLENGES ═══
+
+router.get('/challenges', async (req, res) => {
+  const challenges = await req.prisma.challenge.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: { _count: { select: { entries: true } } },
+  });
+  res.json({ challenges });
+});
+
+router.post('/challenges', async (req, res) => {
+  const { title, description, rules, deadline, cover } = req.body;
+  if (!title || !description || !deadline) {
+    return res.status(400).json({ error: { message: 'Title, description, and deadline are required' } });
+  }
+  const challenge = await req.prisma.challenge.create({
+    data: {
+      title,
+      description,
+      rules: rules || '',
+      deadline: new Date(deadline),
+      cover: cover || null,
+      isActive: true,
+    },
+  });
+  res.status(201).json({ challenge });
+});
+
+router.patch('/challenges/:id', async (req, res) => {
+  const { title, description, rules, deadline, isActive, cover } = req.body;
+  const data = {};
+  if (title !== undefined) data.title = title;
+  if (description !== undefined) data.description = description;
+  if (rules !== undefined) data.rules = rules;
+  if (deadline !== undefined) data.deadline = new Date(deadline);
+  if (isActive !== undefined) data.isActive = isActive;
+  if (cover !== undefined) data.cover = cover;
+
+  const challenge = await req.prisma.challenge.update({
+    where: { id: req.params.id },
+    data,
+  });
+  res.json({ challenge });
+});
+
+router.delete('/challenges/:id', async (req, res) => {
+  // Delete entries first, then the challenge
+  await req.prisma.challengeEntry.deleteMany({ where: { challengeId: req.params.id } });
+  await req.prisma.challenge.delete({ where: { id: req.params.id } });
+  res.json({ message: 'Challenge deleted' });
+});
+
 export default router;

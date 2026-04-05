@@ -107,3 +107,84 @@ export class ChallengesService {
     return { message: 'Challenge deleted' };
   }
 }
+
+// ═══ Auto-select challenge winners (cron) ═══
+export async function autoSelectChallengeWinners(prismaClient) {
+  // Find active challenges past deadline
+  const expiredChallenges = await prismaClient.challenge.findMany({
+    where: { isActive: true, deadline: { lt: new Date() } },
+  });
+
+  if (expiredChallenges.length === 0) return 0;
+
+  // Get admin user for notification actor
+  const admin = await prismaClient.user.findFirst({ where: { isAdmin: true } });
+
+  for (const challenge of expiredChallenges) {
+    // Recalculate scores
+    const entries = await prismaClient.challengeEntry.findMany({
+      where: { challengeId: challenge.id },
+      include: { project: { select: { likeCount: true, commentCount: true, viewCount: true } } },
+    });
+
+    for (const entry of entries) {
+      const score = entry.project.likeCount * 2 + entry.project.commentCount * 3 + entry.project.viewCount;
+      await prismaClient.challengeEntry.update({
+        where: { id: entry.id },
+        data: { score, isWinner: false },
+      });
+    }
+
+    // Top 3 are winners
+    const topEntries = await prismaClient.challengeEntry.findMany({
+      where: { challengeId: challenge.id },
+      orderBy: { score: 'desc' },
+      take: 3,
+    });
+
+    for (const entry of topEntries) {
+      await prismaClient.challengeEntry.update({
+        where: { id: entry.id },
+        data: { isWinner: true },
+      });
+
+      await prismaClient.notification.create({
+        data: {
+          type: 'CHALLENGE_WINNER',
+          recipientId: entry.userId,
+          actorId: admin?.id || entry.userId,
+          entityType: 'challenge',
+          entityId: challenge.id,
+        },
+      });
+    }
+
+    await prismaClient.challenge.update({
+      where: { id: challenge.id },
+      data: { isActive: false },
+    });
+  }
+
+  return expiredChallenges.length;
+}
+
+// ═══ Bootstrap admin user on startup ═══
+export async function bootstrapAdmin(prismaClient) {
+  const bcrypt = await import('bcryptjs');
+  const existing = await prismaClient.user.findUnique({ where: { username: 'admin' } });
+  if (!existing) {
+    const hash = await bcrypt.default.hash('admin', 12);
+    await prismaClient.user.create({
+      data: {
+        email: 'admin@folio.app',
+        username: 'admin',
+        displayName: 'Folio Admin',
+        passwordHash: hash,
+        isAdmin: true,
+        isVerified: true,
+        role: 'DESIGNER',
+      },
+    });
+    console.log('[BOOTSTRAP] Admin user created (admin / admin)');
+  }
+}

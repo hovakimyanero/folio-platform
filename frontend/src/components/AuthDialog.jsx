@@ -113,8 +113,8 @@ export default function AuthDialog({ open, onOpenChange }) {
               </div>
             )}
             <div>
-              <label className="input-label">Email</label>
-              <input className="input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
+              <label className="input-label">{mode === 'login' ? 'Email или username' : 'Email'}</label>
+              <input className="input" type={mode === 'register' ? 'email' : 'text'} placeholder={mode === 'login' ? 'you@example.com или username' : 'you@example.com'} value={email} onChange={e => setEmail(e.target.value)} />
             </div>
             <div>
               <label className="input-label">Пароль</label>

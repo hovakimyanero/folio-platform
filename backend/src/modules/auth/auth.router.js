@@ -133,16 +133,20 @@ router.post('/register',
 // ═══ LOGIN ═══
 
 router.post('/login',
-  body('email').isEmail().normalizeEmail(),
+  body('login').isLength({ min: 1 }),
   body('password').isLength({ min: 1 }),
   async (req, res) => {
-    const { email, password } = req.body;
+    const { login: loginField, password } = req.body;
     const prisma = req.prisma;
 
     try {
-      const user = await prisma.user.findUnique({ where: { email } });
+      // Support login by email or username
+      const isEmail = loginField.includes('@');
+      const user = isEmail
+        ? await prisma.user.findUnique({ where: { email: loginField.toLowerCase().trim() } })
+        : await prisma.user.findUnique({ where: { username: loginField.trim() } });
       if (!user || !user.passwordHash) {
-        return res.status(401).json({ error: { message: 'Invalid email or password' } });
+        return res.status(401).json({ error: { message: 'Invalid login or password' } });
       }
 
       if (user.isBanned) {
@@ -151,7 +155,7 @@ router.post('/login',
 
       const valid = await bcrypt.compare(password, user.passwordHash);
       if (!valid) {
-        return res.status(401).json({ error: { message: 'Invalid email or password' } });
+        return res.status(401).json({ error: { message: 'Invalid login or password' } });
       }
 
       const { accessToken, refreshToken } = generateTokens(user.id, user.role);

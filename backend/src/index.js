@@ -24,6 +24,7 @@ import blogRouter from './modules/blog/blog.router.js';
 import eventsRouter from './modules/events/events.router.js';
 import jobsRouter from './modules/jobs/jobs.router.js';
 import { updateTrendScores } from './modules/projects/projects.service.js';
+import { autoSelectChallengeWinners, bootstrapAdmin } from './modules/challenges/challenges.service.js';
 import { authMiddleware } from './common/auth.middleware.js';
 import { socketHandler } from './modules/messages/socket.handler.js';
 
@@ -115,6 +116,19 @@ cron.schedule('*/10 * * * *', async () => {
     console.error('[CRON] Error updating trends:', err);
   }
 });
+
+// ═══ Cron: Auto-select challenge winners every hour ═══
+cron.schedule('0 * * * *', async () => {
+  try {
+    const count = await autoSelectChallengeWinners(prisma);
+    if (count > 0) console.log(`[CRON] Auto-selected winners for ${count} challenges`);
+  } catch (err) {
+    console.error('[CRON] Error selecting challenge winners:', err);
+  }
+});
+
+// ═══ Bootstrap admin user ═══
+bootstrapAdmin(prisma).catch(err => console.error('[BOOTSTRAP] Admin error:', err));
 
 // ═══ Start ═══
 const PORT = process.env.PORT || 4000;

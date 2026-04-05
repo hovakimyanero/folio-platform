@@ -32,10 +32,10 @@ async function main() {
   console.log(`Created ${categories.length} categories`);
 
   // Admin user
-  const adminPassword = await bcrypt.hash('admin123456', 12);
+  const adminPassword = await bcrypt.hash('admin', 12);
   await prisma.user.upsert({
     where: { email: 'admin@folio.app' },
-    update: {},
+    update: { passwordHash: adminPassword },
     create: {
       email: 'admin@folio.app',
       username: 'admin',
@@ -46,7 +46,7 @@ async function main() {
       role: 'DESIGNER',
     },
   });
-  console.log('Admin user created (admin@folio.app / admin123456)');
+  console.log('Admin user created (admin / admin)');
 
   // Sample challenge
   await prisma.challenge.upsert({
