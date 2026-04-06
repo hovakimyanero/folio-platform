@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
 import { authMiddleware, optionalAuth } from '../../common/auth.middleware.js';
 import multer from 'multer';
-import { uploadFile } from '../../common/upload.js';
+import { uploadFile, getPresignedUploadUrl } from '../../common/upload.js';
 import { shouldNotify } from '../../common/notifications.js';
 
 const router = Router();
@@ -180,6 +180,25 @@ router.get('/:id', optionalAuth, async (req, res) => {
   }
 });
 
+// ═══ PRESIGN UPLOAD URLs ═══
+
+router.post('/presign', authMiddleware, async (req, res) => {
+  const { files } = req.body; // [{ filename, contentType }]
+  if (!files || !Array.isArray(files) || files.length === 0 || files.length > 20) {
+    return res.status(400).json({ error: { message: 'Provide 1-20 files' } });
+  }
+
+  try {
+    const results = await Promise.all(
+      files.map(f => getPresignedUploadUrl(f.filename, f.contentType, `projects/${req.userId}`))
+    );
+    res.json({ uploads: results });
+  } catch (err) {
+    console.error('Presign error:', err);
+    res.status(500).json({ error: { message: 'Failed to generate upload URLs' } });
+  }
+});
+
 // ═══ CREATE PROJECT ═══
 
 router.post('/', authMiddleware, upload.array('media', 20), async (req, res) => {
@@ -227,6 +246,65 @@ router.post('/', authMiddleware, upload.array('media', 20), async (req, res) => 
           create: mediaUrls.map((m, i) => ({
             url: m.url,
             type: m.type,
+            order: i,
+          })),
+        },
+      },
+      include: {
+        author: { select: { id: true, username: true, displayName: true, avatar: true } },
+        media: true,
+      },
+    });
+
+    res.status(201).json({ project });
+  } catch (err) {
+    console.error('Create project error:', err);
+    res.status(500).json({ error: { message: 'Failed to create project' } });
+  }
+});
+
+// ═══ CREATE PROJECT (from pre-uploaded URLs) ═══
+
+router.post('/create', authMiddleware, async (req, res) => {
+  const { title, description, tags, tools, categoryId, colors, coverIndex, media } = req.body;
+  const prisma = req.prisma;
+
+  if (!title) {
+    return res.status(400).json({ error: { message: 'Title is required' } });
+  }
+  if (!media || !Array.isArray(media) || media.length === 0) {
+    return res.status(400).json({ error: { message: 'At least one image is required' } });
+  }
+
+  try {
+    let resolvedCategoryId = categoryId || null;
+    if (categoryId && !categoryId.match(/^c[a-z0-9]{24,}$/)) {
+      const slug = categoryId.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      let cat = await prisma.category.findUnique({ where: { slug } });
+      if (!cat) {
+        cat = await prisma.category.create({ data: { name: categoryId, slug } });
+      }
+      resolvedCategoryId = cat.id;
+    }
+
+    const idx = parseInt(coverIndex) || 0;
+    const cover = media[idx]?.url || media[0]?.url || '';
+
+    const project = await prisma.project.create({
+      data: {
+        title,
+        description: description || null,
+        cover,
+        tags: tags || [],
+        tools: tools || [],
+        colors: colors || [],
+        categoryId: resolvedCategoryId,
+        authorId: req.userId,
+        published: true,
+        media: {
+          create: media.map((m, i) => ({
+            url: m.url,
+            type: m.type || 'IMAGE',
             order: i,
           })),
         },
