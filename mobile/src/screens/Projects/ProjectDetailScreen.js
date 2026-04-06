@@ -16,18 +16,29 @@ export default function ProjectDetailScreen({ navigation, route }) {
   const [similar, setSimilar] = useState([]);
   const [comments, setComments] = useState([]);
   const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [saveCount, setSaveCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
   const [sending, setSending] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [requiresPassword, setRequiresPassword] = useState(false);
 
   const load = useCallback(async () => {
     try {
       const data = await apiJson(`/projects/${id}`);
+      if (data.requiresPassword) {
+        setRequiresPassword(true);
+        setLoading(false);
+        return;
+      }
       setProject(data.project);
       setSimilar(data.similar || []);
       setIsLiked(data.project.isLiked || false);
+      setIsSaved(data.project.isSaved || false);
       setLikesCount(data.project._count?.likes ?? data.project.likeCount ?? 0);
+      setSaveCount(data.project.saveCount || 0);
 
       const commData = await apiJson(`/comments/projects/${id}/comments`);
       setComments(commData.comments || []);
@@ -45,6 +56,40 @@ export default function ProjectDetailScreen({ navigation, route }) {
         const data = await res.json();
         setIsLiked(data.liked);
         setLikesCount(prev => data.liked ? prev + 1 : prev - 1);
+      }
+    } catch {}
+  };
+
+  const toggleSave = async () => {
+    try {
+      const method = isSaved ? 'DELETE' : 'POST';
+      const res = await api(`/saves/${id}`, { method });
+      if (res.ok) {
+        setIsSaved(!isSaved);
+        setSaveCount(prev => isSaved ? prev - 1 : prev + 1);
+      }
+    } catch {}
+  };
+
+  const handleRepost = async () => {
+    try {
+      await api(`/reposts/${id}`, { method: 'POST' });
+    } catch {}
+  };
+
+  const unlockPassword = async () => {
+    try {
+      const data = await apiJson(`/projects/${id}?password=${encodeURIComponent(passwordInput)}`);
+      if (data.project) {
+        setRequiresPassword(false);
+        setProject(data.project);
+        setSimilar(data.similar || []);
+        setIsLiked(data.project.isLiked || false);
+        setIsSaved(data.project.isSaved || false);
+        setLikesCount(data.project._count?.likes ?? data.project.likeCount ?? 0);
+        setSaveCount(data.project.saveCount || 0);
+        const commData = await apiJson(`/comments/projects/${id}/comments`);
+        setComments(commData.comments || []);
       }
     } catch {}
   };
@@ -73,11 +118,34 @@ export default function ProjectDetailScreen({ navigation, route }) {
   if (loading) {
     return <View style={styles.center}><ActivityIndicator size="large" color="#6C5CE7" /></View>;
   }
+
+  if (requiresPassword) {
+    return (
+      <View style={styles.center}>
+        <Ionicons name="lock-closed" size={48} color="#6C5CE7" />
+        <Text style={{ fontSize: 18, fontWeight: '700', color: '#1a1a2e', marginTop: 16, marginBottom: 8 }}>Защищённый проект</Text>
+        <Text style={{ fontSize: 14, color: '#999', marginBottom: 16 }}>Введите пароль для доступа</Text>
+        <TextInput
+          style={[styles.input, { width: 250, textAlign: 'center' }]}
+          placeholder="Пароль"
+          placeholderTextColor="#999"
+          secureTextEntry
+          value={passwordInput}
+          onChangeText={setPasswordInput}
+        />
+        <TouchableOpacity style={{ backgroundColor: '#6C5CE7', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginTop: 12 }} onPress={unlockPassword}>
+          <Text style={{ color: '#fff', fontWeight: '600' }}>Открыть</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   if (!project) {
     return <View style={styles.center}><Text>Проект не найден</Text></View>;
   }
 
   const mediaImages = (project.media || []).filter(m => m.url !== project.cover);
+  const blocks = project.blocks || [];
 
   return (
     <ScrollView style={styles.container}>
@@ -96,11 +164,18 @@ export default function ProjectDetailScreen({ navigation, route }) {
           <Text style={styles.authorName}>{project.author?.displayName || project.author?.username}</Text>
         </TouchableOpacity>
 
-        {/* Stats + Like */}
+        {/* Stats + Like + Save + Repost */}
         <View style={styles.statsRow}>
           <TouchableOpacity style={styles.likeBtn} onPress={toggleLike}>
             <Ionicons name={isLiked ? 'heart' : 'heart-outline'} size={22} color={isLiked ? '#e74c3c' : '#666'} />
             <Text style={[styles.statNum, isLiked && { color: '#e74c3c' }]}>{likesCount}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.likeBtn} onPress={toggleSave}>
+            <Ionicons name={isSaved ? 'bookmark' : 'bookmark-outline'} size={20} color={isSaved ? '#f39c12' : '#666'} />
+            <Text style={[styles.statNum, isSaved && { color: '#f39c12' }]}>{saveCount}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.likeBtn} onPress={handleRepost}>
+            <Ionicons name="repeat" size={20} color="#666" />
           </TouchableOpacity>
           <View style={styles.stat}>
             <Ionicons name="eye" size={18} color="#999" />
@@ -114,6 +189,36 @@ export default function ProjectDetailScreen({ navigation, route }) {
 
         {/* Description */}
         {project.description ? <Text style={styles.description}>{project.description}</Text> : null}
+
+        {/* Case study blocks */}
+        {blocks.length > 0 && (
+          <View style={{ marginBottom: 16 }}>
+            {blocks.map((block, idx) => {
+              switch (block.type) {
+                case 'HEADING': return <Text key={idx} style={{ fontSize: 20, fontWeight: '700', color: '#1a1a2e', marginVertical: 8 }}>{block.content}</Text>;
+                case 'TEXT': return <Text key={idx} style={{ fontSize: 15, color: '#333', lineHeight: 22, marginBottom: 8 }}>{block.content}</Text>;
+                case 'IMAGE': return <Image key={idx} source={{ uri: block.url }} style={{ width: '100%', height: 220, borderRadius: 12, marginBottom: 8 }} resizeMode="cover" />;
+                case 'IMAGE_GALLERY': return (
+                  <ScrollView key={idx} horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                    {(block.urls || []).map((u, i) => <Image key={i} source={{ uri: u }} style={{ width: 200, height: 150, borderRadius: 8, marginRight: 8 }} resizeMode="cover" />)}
+                  </ScrollView>
+                );
+                case 'QUOTE': return (
+                  <View key={idx} style={{ borderLeftWidth: 3, borderLeftColor: '#6C5CE7', paddingLeft: 12, marginVertical: 8 }}>
+                    <Text style={{ fontSize: 15, fontStyle: 'italic', color: '#555' }}>{block.content}</Text>
+                  </View>
+                );
+                case 'DIVIDER': return <View key={idx} style={{ height: 1, backgroundColor: '#eee', marginVertical: 16 }} />;
+                case 'CODE': return (
+                  <View key={idx} style={{ backgroundColor: '#1a1a2e', borderRadius: 8, padding: 12, marginBottom: 8 }}>
+                    <Text style={{ fontFamily: 'monospace', fontSize: 13, color: '#e0e0e0' }}>{block.content}</Text>
+                  </View>
+                );
+                default: return null;
+              }
+            })}
+          </View>
+        )}
 
         {/* Tags */}
         {project.tags?.length > 0 && (

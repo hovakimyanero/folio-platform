@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity, Image,
-  StyleSheet, Alert, ActivityIndicator,
+  StyleSheet, Alert, ActivityIndicator, Switch,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,8 +13,11 @@ export default function SettingsScreen({ navigation }) {
 
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [headline, setHeadline] = useState(user?.headline || '');
   const [website, setWebsite] = useState(user?.website || '');
   const [location, setLocation] = useState(user?.location || '');
+  const [openToWork, setOpenToWork] = useState(user?.openToWork || false);
+  const [openToHire, setOpenToHire] = useState(user?.openToHire || false);
   const [saving, setSaving] = useState(false);
   const [avatarUri, setAvatarUri] = useState(null);
 
@@ -36,8 +39,11 @@ export default function SettingsScreen({ navigation }) {
       const formData = new FormData();
       formData.append('displayName', displayName);
       formData.append('bio', bio);
+      formData.append('headline', headline);
       formData.append('website', website);
       formData.append('location', location);
+      formData.append('openToWork', openToWork.toString());
+      formData.append('openToHire', openToHire.toString());
 
       if (avatarUri) {
         const ext = avatarUri.split('.').pop() || 'jpg';
@@ -97,6 +103,10 @@ export default function SettingsScreen({ navigation }) {
         <TextInput style={styles.input} value={displayName} onChangeText={setDisplayName}
           placeholder="Имя" placeholderTextColor="#999" />
 
+        <Text style={styles.label}>Заголовок</Text>
+        <TextInput style={styles.input} value={headline} onChangeText={setHeadline}
+          placeholder="UI/UX дизайнер • Фрилансер" placeholderTextColor="#999" />
+
         <Text style={styles.label}>О себе</Text>
         <TextInput style={[styles.input, { height: 80 }]} value={bio} onChangeText={setBio}
           placeholder="Расскажите о себе" placeholderTextColor="#999" multiline />
@@ -108,6 +118,22 @@ export default function SettingsScreen({ navigation }) {
         <Text style={styles.label}>Город</Text>
         <TextInput style={styles.input} value={location} onChangeText={setLocation}
           placeholder="Город" placeholderTextColor="#999" />
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 }}>
+          <View>
+            <Text style={styles.label}>Ищу работу</Text>
+            <Text style={{ fontSize: 12, color: '#999' }}>Показать на профиле</Text>
+          </View>
+          <Switch value={openToWork} onValueChange={setOpenToWork} trackColor={{ true: '#10b981' }} />
+        </View>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 }}>
+          <View>
+            <Text style={styles.label}>Нанимаю</Text>
+            <Text style={{ fontSize: 12, color: '#999' }}>Показать на профиле</Text>
+          </View>
+          <Switch value={openToHire} onValueChange={setOpenToHire} trackColor={{ true: '#6366f1' }} />
+        </View>
 
         <TouchableOpacity style={styles.saveBtn} onPress={save} disabled={saving}>
           {saving ? (

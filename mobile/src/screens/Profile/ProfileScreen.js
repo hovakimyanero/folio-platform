@@ -10,6 +10,14 @@ import ProjectCard from '../../components/ProjectCard';
 
 const { width } = Dimensions.get('window');
 
+const LEVEL_LABELS = {
+  NEWCOMER: { label: 'Новичок', color: '#94a3b8' },
+  RISING: { label: 'Растущий', color: '#6366f1' },
+  ESTABLISHED: { label: 'Признанный', color: '#10b981' },
+  TOP: { label: 'Топ', color: '#f59e0b' },
+  LEGEND: { label: 'Легенда', color: '#ef4444' },
+};
+
 export default function ProfileScreen({ route, navigation }) {
   const { username } = route.params;
   const { user: me } = useAuth();
@@ -82,10 +90,55 @@ export default function ProfileScreen({ route, navigation }) {
           source={{ uri: profile.avatar || `https://ui-avatars.com/api/?name=${profile.username}&background=6C5CE7&color=fff` }}
           style={styles.avatar}
         />
-        <Text style={styles.displayName}>{profile.displayName || profile.username}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
+          <Text style={styles.displayName}>{profile.displayName || profile.username}</Text>
+          {profile.isVerified && <Ionicons name="shield-checkmark" size={16} color="#6C5CE7" />}
+          {profile.isPro && (
+            <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 100, backgroundColor: '#f59e0b' }}>
+              <Text style={{ fontSize: 9, fontWeight: '800', color: '#fff' }}>PRO</Text>
+            </View>
+          )}
+        </View>
         <Text style={styles.username}>@{profile.username}</Text>
 
+        {profile.level && LEVEL_LABELS[profile.level] && (
+          <View style={{ paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100, backgroundColor: `${LEVEL_LABELS[profile.level].color}20`, marginTop: 4 }}>
+            <Text style={{ fontSize: 11, fontWeight: '600', color: LEVEL_LABELS[profile.level].color }}>{LEVEL_LABELS[profile.level].label}</Text>
+          </View>
+        )}
+
+        {profile.headline ? <Text style={{ fontSize: 14, color: '#555', marginTop: 6 }}>{profile.headline}</Text> : null}
+
+        {(profile.openToWork || profile.openToHire) && (
+          <View style={{ flexDirection: 'row', gap: 6, marginTop: 6 }}>
+            {profile.openToWork && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 100, backgroundColor: 'rgba(16,185,129,0.1)' }}>
+                <Ionicons name="briefcase-outline" size={11} color="#10b981" />
+                <Text style={{ fontSize: 10, color: '#10b981', fontWeight: '500' }}>Ищу работу</Text>
+              </View>
+            )}
+            {profile.openToHire && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 100, backgroundColor: 'rgba(99,102,241,0.1)' }}>
+                <Ionicons name="people-outline" size={11} color="#6366f1" />
+                <Text style={{ fontSize: 10, color: '#6366f1', fontWeight: '500' }}>Нанимаю</Text>
+              </View>
+            )}
+          </View>
+        )}
+
         {profile.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
+
+        {/* Badges */}
+        {profile.badges?.length > 0 && (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+            {profile.badges.map((ub, i) => (
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 100, backgroundColor: '#f0edff' }}>
+                <Text style={{ fontSize: 12 }}>{ub.badge?.icon || '🏅'}</Text>
+                <Text style={{ fontSize: 11, color: '#6C5CE7', fontWeight: '500' }}>{ub.badge?.name}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         <View style={styles.metaRow}>
           {profile.location ? (

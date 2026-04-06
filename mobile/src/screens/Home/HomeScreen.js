@@ -21,17 +21,20 @@ const CATEGORIES = [
 export default function HomeScreen({ navigation }) {
   const [trending, setTrending] = useState([]);
   const [latest, setLatest] = useState([]);
+  const [weeklyPicks, setWeeklyPicks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [trendRes, latestRes] = await Promise.all([
-        apiJson('/projects?sort=popular&limit=8'),
-        apiJson('/projects?sort=latest&limit=8'),
+      const [trendRes, latestRes, picksRes] = await Promise.all([
+        apiJson('/feed/trending?period=7d&limit=8').catch(() => ({ projects: [] })),
+        apiJson('/projects?sort=latest&limit=8').catch(() => ({ projects: [] })),
+        apiJson('/feed/weekly-picks?limit=4').catch(() => []),
       ]);
-      setTrending(trendRes.projects || []);
+      setTrending(trendRes.projects || trendRes || []);
       setLatest(latestRes.projects || []);
+      setWeeklyPicks((picksRes || []).map(p => p.project || p));
     } catch {}
     setLoading(false);
     setRefreshing(false);
@@ -108,19 +111,52 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
+      {/* Weekly Picks */}
+      {weeklyPicks.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>⭐ Выбор недели</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+            {weeklyPicks.map((p) => (
+              <ProjectCard
+                key={p.id}
+                project={p}
+                style={{ width: 200, marginRight: 12 }}
+                onPress={() => navigation.navigate('ProjectDetail', { id: p.id })}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       {/* Quick links */}
       <View style={styles.links}>
+        <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Feed')}>
+          <Ionicons name="sparkles" size={28} color="#6C5CE7" />
+          <Text style={styles.linkText}>Лента</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Collections')}>
-          <Ionicons name="albums" size={28} color="#6C5CE7" />
+          <Ionicons name="albums" size={28} color="#8e44ad" />
           <Text style={styles.linkText}>Коллекции</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Challenges')}>
           <Ionicons name="trophy" size={28} color="#F39C12" />
           <Text style={styles.linkText}>Челленджи</Text>
         </TouchableOpacity>
+      </View>
+      <View style={styles.links}>
+        <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Analytics')}>
+          <Ionicons name="bar-chart" size={28} color="#0984e3" />
+          <Text style={styles.linkText}>Аналитика</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Conversations')}>
           <Ionicons name="chatbubbles" size={28} color="#00b894" />
           <Text style={styles.linkText}>Сообщения</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={28} color="#e17055" />
+          <Text style={styles.linkText}>Поиск</Text>
         </TouchableOpacity>
       </View>
 
