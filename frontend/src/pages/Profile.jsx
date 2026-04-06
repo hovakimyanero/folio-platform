@@ -48,29 +48,29 @@ export default function Profile() {
   return (
     <div style={{ paddingTop: 100, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
       {/* Cover */}
-      <div style={{ height: 280, background: profile.cover ? `url(${profile.cover}) center/cover` : 'linear-gradient(135deg, var(--card), var(--surface))', borderRadius: 0 }} />
+      <div className="profile-cover" style={{ height: 280, background: profile.cover ? `url(${profile.cover}) center/cover` : 'linear-gradient(135deg, var(--card), var(--surface))', borderRadius: 0 }} />
 
       <div style={{ maxWidth: 1000, margin: '-60px auto 0', padding: '0 24px 80px' }}>
-        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-end', marginBottom: 40 }}>
-          <Avatar.Root style={{ width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '4px solid var(--bg)', flexShrink: 0 }}>
+        <div className="profile-header" style={{ display: 'flex', gap: 24, alignItems: 'flex-end', marginBottom: 40 }}>
+          <Avatar.Root className="profile-avatar" style={{ width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '4px solid var(--bg)', flexShrink: 0 }}>
             <Avatar.Image src={profile.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             <Avatar.Fallback style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--card)', fontSize: 36, fontFamily: 'var(--font-display)' }}>
               {(profile.displayName || profile.username)[0]}
             </Avatar.Fallback>
           </Avatar.Root>
 
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="profile-name-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div style={{ minWidth: 0 }}>
                 <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em' }}>{profile.displayName || profile.username}</h1>
                 <div style={{ fontSize: 14, color: 'var(--text-3)' }}>@{profile.username}</div>
               </div>
               {!isOwn && me && (
-                <button className={`btn ${following ? 'btn-secondary' : 'btn-primary'}`} onClick={toggleFollow}>
+                <button className={`btn ${following ? 'btn-secondary' : 'btn-primary'}`} onClick={toggleFollow} style={{ flexShrink: 0 }}>
                   {following ? <><UserCheck size={14} /> Подписка</> : <><UserPlus size={14} /> Подписаться</>}
                 </button>
               )}
-              {isOwn && <Link to="/settings" className="btn btn-secondary">Редактировать</Link>}
+              {isOwn && <Link to="/settings" className="btn btn-secondary" style={{ flexShrink: 0 }}>Редактировать</Link>}
             </div>
           </div>
         </div>
