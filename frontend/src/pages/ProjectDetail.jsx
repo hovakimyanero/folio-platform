@@ -226,7 +226,7 @@ export default function ProjectDetail() {
         {/* Media gallery */}
         {project.media?.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 48 }}>
-            {project.media.map(m => (
+            {project.media.filter(m => m.url !== project.cover).map(m => (
               <div key={m.id} style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
                 {m.type === 'VIDEO' ? (
                   <video src={m.url} controls style={{ width: '100%' }} />
