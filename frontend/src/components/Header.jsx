@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Avatar from '@radix-ui/react-avatar';
-import { Search, Bell, Plus, Settings, LogOut, User, ChevronDown, Menu, X } from 'lucide-react';
+import { Search, Bell, Plus, Settings, LogOut, User, ChevronDown, Menu, X, BarChart3 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAuthDialog } from '../context/AuthDialogContext';
 import { useToast } from '../context/ToastContext';
@@ -63,7 +63,7 @@ export default function Header() {
         </Link>
 
         <nav className="header-nav" style={{ display: 'flex', gap: 40, alignItems: 'center' }}>
-          {[['Проекты', '/projects'], ['Тренды', '/projects?sort=trending'], ['Коллекции', '/collections'], ['Авторы', '/search?type=users'], ['Челленджи', '/challenges']].map(([label, to]) => (
+          {[['Лента', '/feed'], ['Проекты', '/projects'], ['Маркетплейс', '/marketplace'], ['Коллекции', '/collections'], ['Челленджи', '/challenges']].map(([label, to]) => (
             <Link
               key={label}
               to={to}
@@ -108,6 +108,9 @@ export default function Header() {
                     <DropdownMenu.Item onClick={() => navigate(`/profile/${user.username}`)}>
                       <User size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Профиль
                     </DropdownMenu.Item>
+                    <DropdownMenu.Item onClick={() => navigate('/analytics')}>
+                      <BarChart3 size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Аналитика
+                    </DropdownMenu.Item>
                     <DropdownMenu.Item onClick={() => navigate('/settings')}>
                       <Settings size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Настройки
                     </DropdownMenu.Item>
@@ -138,12 +141,13 @@ export default function Header() {
           background: 'rgba(11,11,13,0.95)', backdropFilter: 'blur(20px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24,
         }}>
-          {[['Проекты', '/projects'], ['Тренды', '/projects?sort=trending'], ['Коллекции', '/collections'], ['Авторы', '/search?type=users'], ['Челленджи', '/challenges']].map(([label, to]) => (
+          {[['Лента', '/feed'], ['Проекты', '/projects'], ['Маркетплейс', '/marketplace'], ['Коллекции', '/collections'], ['Челленджи', '/challenges']].map(([label, to]) => (
             <Link key={label} to={to} onClick={() => setMobileMenu(false)} style={{ fontSize: 24, fontFamily: 'var(--font-display)', color: 'var(--text-2)' }}>{label}</Link>
           ))}
           {user && (
             <>
               <Link to={`/profile/${user.username}`} onClick={() => setMobileMenu(false)} style={{ fontSize: 24, fontFamily: 'var(--font-display)', color: 'var(--text-2)' }}>Профиль</Link>
+              <Link to="/analytics" onClick={() => setMobileMenu(false)} style={{ fontSize: 24, fontFamily: 'var(--font-display)', color: 'var(--text-2)' }}>Аналитика</Link>
               <Link to="/settings" onClick={() => setMobileMenu(false)} style={{ fontSize: 24, fontFamily: 'var(--font-display)', color: 'var(--text-2)' }}>Настройки</Link>
               <button onClick={() => { handleLogout(); setMobileMenu(false); }} style={{ fontSize: 24, fontFamily: 'var(--font-display)', color: '#ff6b6b' }}>Выйти</button>
             </>

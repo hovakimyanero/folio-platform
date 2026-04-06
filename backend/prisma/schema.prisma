@@ -12,55 +12,89 @@ datasource db {
 // ═══════════════════════════════════════
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  username      String   @unique
-  passwordHash  String?
-  displayName   String?
-  bio           String?
-  avatar        String?
-  cover         String?
-  website       String?
-  location      String?
-  role          Role     @default(DESIGNER)
-  isVerified    Boolean  @default(false)
-  isBanned      Boolean  @default(false)
-  isAdmin       Boolean  @default(false)
-  provider      AuthProvider @default(LOCAL)
-  providerId    String?
+  id           String       @id @default(cuid())
+  email        String       @unique
+  username     String       @unique
+  passwordHash String?
+  displayName  String?
+  headline     String? // "Senior UI Designer at Google"
+  bio          String?      @db.Text
+  avatar       String?
+  cover        String?
+  website      String?
+  location     String?
+  role         Role         @default(DESIGNER)
+  isVerified   Boolean      @default(false)
+  isBanned     Boolean      @default(false)
+  isAdmin      Boolean      @default(false)
+  provider     AuthProvider @default(LOCAL)
+  providerId   String?
 
-  skills        String[] @default([])
-  specialization String[] @default([])
-  languages     String[] @default([])
-  birthDate     DateTime?
-  socialLinks   Json?    // { twitter, instagram, dribbble, linkedin, github }
-  notificationPrefs Json? // { likes: true, comments: true, follows: true, messages: true }
+  // Enhanced profile
+  skills            String[]  @default([])
+  specialization    String[]  @default([])
+  languages         String[]  @default([])
+  birthDate         DateTime?
+  socialLinks       Json? // { twitter, instagram, dribbble, linkedin, github, behance }
+  notificationPrefs Json? // { likes, comments, follows, messages, saves }
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  // Professional info
+  experience   Json? // [{ company, role, from, to, current, description }]
+  education    Json? // [{ school, degree, from, to }]
+  customBlocks Json? // [{ id, type, title, content }] — profile sections
+
+  // Status & reputation
+  openToWork       Boolean   @default(false)
+  openToHire       Boolean   @default(false)
+  level            UserLevel @default(NEWCOMER)
+  reputationScore  Float     @default(0)
+  consistencyScore Float     @default(0) // publish frequency
+  featuredCount    Int       @default(0)
+
+  // PRO subscription
+  isPro        Boolean   @default(false)
+  proExpiresAt DateTime?
+  profileTheme Json? // { mode: 'dark'|'light', accentColor }
+  customCTA    Json? // { label, url }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  projects      Project[]
-  likes         Like[]
-  comments      Comment[]
-  collections   Collection[]
-  followers     Follow[]   @relation("following")
-  following     Follow[]   @relation("follower")
-  sentMessages     Message[]  @relation("sender")
-  receivedMessages Message[]  @relation("receiver")
-  notifications    Notification[] @relation("recipient")
-  notificationsCreated Notification[] @relation("actor")
-  challengeEntries ChallengeEntry[]
-  reports       Report[]   @relation("reporter")
-  reportedReports Report[] @relation("reported")
-  sessions      Session[]
-  passwordResets PasswordReset[]
-  blogPosts     BlogPost[]
-  jobs          Job[]
+  projects              Project[]
+  likes                 Like[]
+  comments              Comment[]
+  collections           Collection[]
+  followers             Follow[]               @relation("following")
+  following             Follow[]               @relation("follower")
+  sentMessages          Message[]              @relation("sender")
+  receivedMessages      Message[]              @relation("receiver")
+  notifications         Notification[]         @relation("recipient")
+  notificationsCreated  Notification[]         @relation("actor")
+  challengeEntries      ChallengeEntry[]
+  reports               Report[]               @relation("reporter")
+  reportedReports       Report[]               @relation("reported")
+  sessions              Session[]
+  passwordResets        PasswordReset[]
+  blogPosts             BlogPost[]
+  jobs                  Job[]
+  saves                 Save[]
+  reposts               Repost[]
+  badges                UserBadge[]
+  tagSubscriptions      TagSubscription[]
+  categorySubscriptions CategorySubscription[]
+  marketplaceItems      MarketplaceItem[]      @relation("seller")
+  purchases             MarketplacePurchase[]  @relation("buyer")
+  profileViews          ProfileView[]          @relation("viewed")
+  weeklyPicks           WeeklyPick[]
+  interactions          UserInteraction[]
 
   @@index([email])
   @@index([username])
   @@index([createdAt])
+  @@index([reputationScore(sort: Desc)])
+  @@index([level])
+  @@index([openToWork])
 }
 
 enum Role {
@@ -73,6 +107,14 @@ enum AuthProvider {
   LOCAL
   GOOGLE
   APPLE
+}
+
+enum UserLevel {
+  NEWCOMER
+  RISING
+  ESTABLISHED
+  TOP
+  LEGEND
 }
 
 model Session {
@@ -116,39 +158,54 @@ model EmailVerification {
 // ═══════════════════════════════════════
 
 model Project {
-  id          String   @id @default(cuid())
-  title       String
-  description String?  @db.Text
-  cover       String   // URL to cover image
-  published   Boolean  @default(false)
-  featured    Boolean  @default(false)
-  viewCount   Int      @default(0)
-  likeCount   Int      @default(0)
+  id           String  @id @default(cuid())
+  title        String
+  description  String? @db.Text
+  cover        String // URL to cover image
+  published    Boolean @default(false)
+  featured     Boolean @default(false)
+  viewCount    Int     @default(0)
+  likeCount    Int     @default(0)
   commentCount Int     @default(0)
+  saveCount    Int     @default(0)
+  repostCount  Int     @default(0)
 
   // Trending score (updated by cron)
-  trendScore  Float    @default(0)
+  trendScore Float @default(0)
+
+  // Publishing controls
+  isDraft      Boolean   @default(false)
+  scheduledAt  DateTime? // publish at this time
+  passwordHash String? // password-protected project
+  linkOnly     Boolean   @default(false) // unlisted, accessible by link
 
   // Metadata
-  tags        String[] @default([])
-  tools       String[] @default([])
-  colors      String[] @default([]) // hex values
+  tags     String[] @default([])
+  tools    String[] @default([])
+  colors   String[] @default([]) // hex values
+  industry String? // "fintech", "healthcare", etc.
+  style    String? // "minimal", "brutalist", etc.
 
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
 
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  media       ProjectMedia[]
-  likes       Like[]
-  comments    Comment[]
-  collectionItems CollectionItem[]
+  media            ProjectMedia[]
+  blocks           ProjectBlock[] // Case study builder
+  likes            Like[]
+  comments         Comment[]
+  saves            Save[]
+  reposts          Repost[]
+  collectionItems  CollectionItem[]
   challengeEntries ChallengeEntry[]
+  weeklyPicks      WeeklyPick[]
+  interactions     UserInteraction[]
 
   @@index([authorId])
   @@index([categoryId])
@@ -156,18 +213,48 @@ model Project {
   @@index([createdAt(sort: Desc)])
   @@index([featured])
   @@index([published])
+  @@index([isDraft])
+  @@index([scheduledAt])
+}
+
+// ═══ CASE STUDY BUILDER ═══
+
+model ProjectBlock {
+  id      String    @id @default(cuid())
+  type    BlockType
+  content Json // { text, url, urls[], embedUrl, caption, ... }
+  order   Int       @default(0)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([order])
+}
+
+enum BlockType {
+  TEXT
+  HEADING
+  IMAGE
+  IMAGE_GALLERY
+  VIDEO
+  EMBED // Figma, YouTube, etc.
+  QUOTE
+  DIVIDER
+  CODE
+  BEFORE_AFTER
 }
 
 model ProjectMedia {
-  id        String    @id @default(cuid())
-  url       String
-  type      MediaType @default(IMAGE)
-  order     Int       @default(0)
-  width     Int?
-  height    Int?
-  
+  id     String    @id @default(cuid())
+  url    String
+  type   MediaType @default(IMAGE)
+  order  Int       @default(0)
+  width  Int?
+  height Int?
+
   projectId String
-  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
 }
@@ -178,15 +265,59 @@ enum MediaType {
   EMBED
 }
 
-model Category {
-  id       String    @id @default(cuid())
-  name     String    @unique
-  slug     String    @unique
-  icon     String?
-  order    Int       @default(0)
-  projects Project[]
+// ═══ TAGS (deep system) ═══
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  parentId  String?
+  parent    Tag?     @relation("tagHierarchy", fields: [parentId], references: [id])
+  children  Tag[]    @relation("tagHierarchy")
+  useCount  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  subscribers TagSubscription[]
 
   @@index([slug])
+  @@index([parentId])
+  @@index([useCount(sort: Desc)])
+}
+
+model TagSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tagId])
+  @@index([userId])
+}
+
+model Category {
+  id          String                 @id @default(cuid())
+  name        String                 @unique
+  slug        String                 @unique
+  icon        String?
+  order       Int                    @default(0)
+  projects    Project[]
+  subscribers CategorySubscription[]
+
+  @@index([slug])
+}
+
+model CategorySubscription {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, categoryId])
+  @@index([userId])
 }
 
 // ═══════════════════════════════════════
@@ -206,18 +337,45 @@ model Like {
   @@index([userId])
 }
 
-model Comment {
+model Save {
   id        String   @id @default(cuid())
-  content   String   @db.Text
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
+  createdAt DateTime @default(now())
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Repost {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  caption   String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Comment {
+  id        String  @id @default(cuid())
+  content   String  @db.Text
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   // Reply support
-  parentId  String?
-  parent    Comment? @relation("replies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[] @relation("replies")
+  parentId String?
+  parent   Comment?  @relation("replies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("replies")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -245,19 +403,19 @@ model Follow {
 // ═══════════════════════════════════════
 
 model Collection {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
   cover       String?
-  isPrivate   Boolean  @default(false)
-  
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isPrivate   Boolean @default(false)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  items       CollectionItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items CollectionItem[]
 
   @@index([userId])
 }
@@ -286,11 +444,11 @@ model Challenge {
   cover       String?
   deadline    DateTime
   isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  entries     ChallengeEntry[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries ChallengeEntry[]
 
   @@index([isActive])
   @@index([deadline])
@@ -318,18 +476,18 @@ model ChallengeEntry {
 // ═══════════════════════════════════════
 
 model Message {
-  id         String   @id @default(cuid())
-  content    String   @db.Text
-  fileUrl    String?
-  fileName   String?
-  read       Boolean  @default(false)
-  
-  senderId   String
-  sender     User     @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiverId String
-  receiver   User     @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  id       String  @id @default(cuid())
+  content  String  @db.Text
+  fileUrl  String?
+  fileName String?
+  read     Boolean @default(false)
 
-  createdAt  DateTime @default(now())
+  senderId   String
+  sender     User   @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User   @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 
   @@index([senderId, receiverId])
   @@index([receiverId, read])
@@ -341,20 +499,20 @@ model Message {
 // ═══════════════════════════════════════
 
 model Notification {
-  id          String           @id @default(cuid())
-  type        NotificationType
-  read        Boolean          @default(false)
-  
-  recipientId String
-  recipient   User             @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
-  actorId     String
-  actor       User             @relation("actor", fields: [actorId], references: [id], onDelete: Cascade)
-  
-  // Polymorphic reference
-  entityType  String?          // "project", "comment", "challenge"
-  entityId    String?
+  id   String           @id @default(cuid())
+  type NotificationType
+  read Boolean          @default(false)
 
-  createdAt   DateTime         @default(now())
+  recipientId String
+  recipient   User   @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actorId     String
+  actor       User   @relation("actor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  // Polymorphic reference
+  entityType String? // "project", "comment", "challenge"
+  entityId   String?
+
+  createdAt DateTime @default(now())
 
   @@index([recipientId, read])
   @@index([createdAt(sort: Desc)])
@@ -365,6 +523,11 @@ enum NotificationType {
   COMMENT
   FOLLOW
   MENTION
+  SAVE
+  REPOST
+  WEEKLY_PICK
+  BADGE_EARNED
+  LEVEL_UP
   CHALLENGE_WINNER
   SYSTEM
 }
@@ -374,22 +537,22 @@ enum NotificationType {
 // ═══════════════════════════════════════
 
 model Report {
-  id          String       @id @default(cuid())
-  reason      String
-  details     String?      @db.Text
-  status      ReportStatus @default(PENDING)
-  
-  reporterId  String
-  reporter    User         @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
-  
-  reportedUserId String?
-  reportedUser   User?     @relation("reported", fields: [reportedUserId], references: [id], onDelete: Cascade)
-  
-  entityType  String?      // "project", "comment", "user"
-  entityId    String?
+  id      String       @id @default(cuid())
+  reason  String
+  details String?      @db.Text
+  status  ReportStatus @default(PENDING)
 
-  resolvedAt  DateTime?
-  createdAt   DateTime     @default(now())
+  reporterId String
+  reporter   User   @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  reportedUserId String?
+  reportedUser   User?   @relation("reported", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  entityType String? // "project", "comment", "user"
+  entityId   String?
+
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
 
   @@index([status])
   @@index([createdAt(sort: Desc)])
@@ -422,16 +585,16 @@ model ProjectView {
 // ═══════════════════════════════════════
 
 model BlogPost {
-  id          String   @id @default(cuid())
-  title       String
-  content     String   @db.Text
-  excerpt     String?  @db.Text
-  cover       String?
-  published   Boolean  @default(true)
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  excerpt   String?  @db.Text
+  cover     String?
+  published Boolean  @default(true)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([authorId])
   @@index([createdAt(sort: Desc)])
@@ -445,8 +608,8 @@ model Event {
   id          String   @id @default(cuid())
   title       String
   description String   @db.Text
-  type        String   // TOP_CREATOR, NEW_FEATURE, MILESTONE
-  entityType  String?  // "user", "project"
+  type        String // TOP_CREATOR, NEW_FEATURE, MILESTONE
+  entityType  String? // "user", "project"
   entityId    String?
   metadata    Json?
   createdAt   DateTime @default(now())
@@ -459,21 +622,168 @@ model Event {
 // ═══════════════════════════════════════
 
 model Job {
-  id          String   @id @default(cuid())
-  title       String
-  company     String
-  location    String?
-  type        String   @default("FULL_TIME") // FULL_TIME, PART_TIME, FREELANCE, REMOTE
-  description String   @db.Text
-  salary      String?
+  id           String   @id @default(cuid())
+  title        String
+  company      String
+  location     String?
+  type         String   @default("FULL_TIME") // FULL_TIME, PART_TIME, FREELANCE, REMOTE
+  description  String   @db.Text
+  salary       String?
   contactEmail String?
-  contactUrl  String?
-  published   Boolean  @default(true)
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  contactUrl   String?
+  published    Boolean  @default(true)
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([authorId])
   @@index([createdAt(sort: Desc)])
+}
+
+// ═══════════════════════════════════════
+// REPUTATION & BADGES
+// ═══════════════════════════════════════
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String? // emoji or URL
+  criteria    Json? // { type, threshold } e.g. { type: "likes", threshold: 100 }
+  createdAt   DateTime @default(now())
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId  String
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+// ═══════════════════════════════════════
+// CURATION
+// ═══════════════════════════════════════
+
+model WeeklyPick {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  curatorId String
+  curator   User     @relation(fields: [curatorId], references: [id], onDelete: Cascade)
+  week      Int // ISO week number
+  year      Int
+  note      String? // curator's note
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, week, year])
+  @@index([week, year])
+}
+
+// ═══════════════════════════════════════
+// USER INTERACTIONS (for algorithm)
+// ═══════════════════════════════════════
+
+model UserInteraction {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type      InteractionType
+  value     Float           @default(1) // e.g. dwell time in seconds, scroll depth 0-1
+  createdAt DateTime        @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([projectId])
+}
+
+enum InteractionType {
+  VIEW
+  DWELL // time spent
+  SCROLL // scroll depth
+  PROFILE_CLICK // clicked author profile
+  SHARE
+}
+
+// ═══════════════════════════════════════
+// MARKETPLACE
+// ═══════════════════════════════════════
+
+model MarketplaceItem {
+  id          String          @id @default(cuid())
+  title       String
+  description String          @db.Text
+  price       Float // in USD
+  currency    String          @default("USD")
+  cover       String
+  files       Json? // [{ url, name, size }]
+  previews    Json? // [{ url }]
+  type        MarketplaceType
+  tags        String[]        @default([])
+  downloads   Int             @default(0)
+  rating      Float           @default(0)
+  published   Boolean         @default(true)
+
+  sellerId String
+  seller   User   @relation("seller", fields: [sellerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchases MarketplacePurchase[]
+
+  @@index([sellerId])
+  @@index([type])
+  @@index([createdAt(sort: Desc)])
+}
+
+enum MarketplaceType {
+  UI_KIT
+  TEMPLATE
+  ICON_SET
+  FONT
+  THREE_D_ASSET
+  MOCKUP
+  ILLUSTRATION
+  OTHER
+}
+
+model MarketplacePurchase {
+  id        String          @id @default(cuid())
+  itemId    String
+  item      MarketplaceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  buyerId   String
+  buyer     User            @relation("buyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  amount    Float
+  createdAt DateTime        @default(now())
+
+  @@unique([itemId, buyerId])
+  @@index([buyerId])
+}
+
+// ═══════════════════════════════════════
+// PROFILE ANALYTICS
+// ═══════════════════════════════════════
+
+model ProfileView {
+  id        String   @id @default(cuid())
+  viewedId  String
+  viewed    User     @relation("viewed", fields: [viewedId], references: [id], onDelete: Cascade)
+  viewerIp  String?
+  userId    String?
+  referrer  String? // traffic source
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([viewedId])
+  @@index([createdAt])
 }

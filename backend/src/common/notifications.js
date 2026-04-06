@@ -13,6 +13,11 @@ export async function shouldNotify(prisma, recipientId, type) {
     COMMENT: 'comments',
     FOLLOW: 'follows',
     MENTION: 'comments',
+    SAVE: 'saves',
+    REPOST: 'likes',
+    WEEKLY_PICK: 'likes',
+    BADGE_EARNED: 'likes',
+    LEVEL_UP: 'likes',
     CHALLENGE_WINNER: 'likes',
     SYSTEM: 'likes',
   };

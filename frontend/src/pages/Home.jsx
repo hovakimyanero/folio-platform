@@ -3,14 +3,19 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAuthDialog } from '../context/AuthDialogContext';
 import api from '../utils/api';
+import { Heart, Eye, TrendingUp, Sparkles, Award } from 'lucide-react';
 
 export default function Home() {
   const { user } = useAuth();
   const { openAuthDialog } = useAuthDialog();
   const [stats, setStats] = useState({ users: 0, projects: 0, views: 0 });
+  const [trending, setTrending] = useState([]);
+  const [picks, setPicks] = useState([]);
 
   useEffect(() => {
     api.get('/projects/stats').then(({ data }) => setStats(data)).catch(() => {});
+    api.get('/feed/trending?period=7d&limit=8').then(({ data }) => setTrending(data.projects || [])).catch(() => {});
+    api.get('/feed/weekly-picks?limit=4').then(({ data }) => setPicks(data.picks || [])).catch(() => {});
   }, []);
 
   const formatNum = (n) => {
@@ -93,6 +98,85 @@ export default function Home() {
         </div>
         <style>{`@keyframes drift { 0% { transform: translateX(0) } 100% { transform: translateX(-50%) } }`}</style>
       </div>
+
+      {/* Trending Projects */}
+      {trending.length > 0 && (
+        <section style={{ padding: '80px 48px', position: 'relative', zIndex: 1 }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <TrendingUp size={20} color="var(--accent)" />
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em' }}>В тренде</h2>
+              </div>
+              <Link to="/feed" className="btn btn-ghost btn-sm">Смотреть все →</Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+              {trending.map(p => (
+                <Link key={p.id} to={`/projects/${p.id}`} style={{
+                  borderRadius: 'var(--radius-md)', overflow: 'hidden', background: 'var(--card)',
+                  border: '1px solid var(--glass-border)', transition: 'transform 0.3s, box-shadow 0.3s',
+                }}
+                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)'; }}
+                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                >
+                  <img src={p.cover} alt={p.title} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover' }} />
+                  <div style={{ padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: 500, fontSize: 14, marginBottom: 4 }}>{p.title}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{p.author?.displayName || p.author?.username}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, fontSize: 11, color: 'var(--text-3)' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Heart size={11} /> {p.likeCount || 0}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Eye size={11} /> {p.viewCount || 0}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Weekly Picks */}
+      {picks.length > 0 && (
+        <section style={{ padding: '60px 48px 80px', position: 'relative', zIndex: 1, borderTop: '1px solid var(--glass-border)' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Award size={20} color="var(--accent)" />
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em' }}>Выбор недели</h2>
+              </div>
+              <Link to="/feed" className="btn btn-ghost btn-sm">Все подборки →</Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+              {picks.map(pk => (
+                <Link key={pk.id} to={`/projects/${pk.project?.id}`} style={{
+                  borderRadius: 'var(--radius-md)', overflow: 'hidden', background: 'var(--card)',
+                  border: '1px solid rgba(var(--accent-rgb), 0.3)', transition: 'transform 0.3s',
+                }}>
+                  <div style={{ position: 'relative' }}>
+                    <img src={pk.project?.cover} alt={pk.project?.title} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover' }} />
+                    {pk.curatorNote && (
+                      <div style={{
+                        position: 'absolute', bottom: 8, left: 8, right: 8, padding: '8px 12px',
+                        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+                        borderRadius: 'var(--radius-sm)', fontSize: 11, color: 'var(--text-2)',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                        <Sparkles size={12} color="var(--accent)" /> {pk.curatorNote}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ padding: 14 }}>
+                    <div style={{ fontWeight: 500, fontSize: 14 }}>{pk.project?.title}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{pk.project?.author?.displayName}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA — only for guests */}
       {!user && (

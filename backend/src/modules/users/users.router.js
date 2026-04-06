@@ -7,6 +7,29 @@ import { shouldNotify } from '../../common/notifications.js';
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
+// ═══ SEARCH USERS ═══
+
+router.get('/', async (req, res) => {
+  const { search, limit = 20 } = req.query;
+  if (!search) return res.json({ users: [] });
+  try {
+    const users = await req.prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: search, mode: 'insensitive' } },
+          { displayName: { contains: search, mode: 'insensitive' } },
+          { headline: { contains: search, mode: 'insensitive' } },
+          { specialization: { contains: search, mode: 'insensitive' } },
+        ],
+      },
+      take: parseInt(limit),
+      select: { id: true, username: true, displayName: true, avatar: true, headline: true, openToWork: true, openToHire: true, level: true },
+      orderBy: { reputationScore: 'desc' },
+    });
+    res.json({ users });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ═══ DATA EXPORT (must be before /:username) ═══
 
 router.get('/me/export', authMiddleware, async (req, res) => {
@@ -78,11 +101,25 @@ router.get('/:username', optionalAuth, async (req, res) => {
       bio: true, website: true, location: true, role: true, skills: true,
       specialization: true, languages: true, birthDate: true,
       socialLinks: true, isVerified: true, createdAt: true,
+      headline: true, experience: true, education: true, customBlocks: true,
+      openToWork: true, openToHire: true, level: true, reputationScore: true,
+      isPro: true, profileTheme: true, customCTA: true,
+      badges: {
+        include: { badge: true },
+        orderBy: { earnedAt: 'desc' },
+      },
       _count: { select: { projects: true, followers: true, following: true } },
     },
   });
 
   if (!user) return res.status(404).json({ error: { message: 'User not found' } });
+
+  // Track profile view
+  if (req.userId && req.userId !== user.id) {
+    prisma.profileView.create({
+      data: { viewerId: req.userId, viewedId: user.id },
+    }).catch(() => {}); // fire and forget
+  }
 
   let isFollowing = false;
   if (req.userId && req.userId !== user.id) {
@@ -132,11 +169,13 @@ router.patch('/me', authMiddleware, upload.fields([
   { name: 'cover', maxCount: 1 },
 ]), async (req, res) => {
   const prisma = req.prisma;
-  const { displayName, bio, website, location, skills, socialLinks, specialization, languages, birthDate } = req.body;
+  const { displayName, bio, website, location, skills, socialLinks, specialization, languages, birthDate,
+    headline, experience, education, customBlocks, openToWork, openToHire, profileTheme, customCTA } = req.body;
 
   const data = {};
   if (displayName !== undefined) data.displayName = displayName;
   if (bio !== undefined) data.bio = bio;
+  if (headline !== undefined) data.headline = headline;
   if (website !== undefined) data.website = website;
   if (location !== undefined) data.location = location;
   if (skills) data.skills = JSON.parse(skills);
@@ -144,6 +183,13 @@ router.patch('/me', authMiddleware, upload.fields([
   if (languages) data.languages = JSON.parse(languages);
   if (birthDate !== undefined) data.birthDate = birthDate ? new Date(birthDate) : null;
   if (socialLinks) data.socialLinks = JSON.parse(socialLinks);
+  if (experience !== undefined) data.experience = typeof experience === 'string' ? JSON.parse(experience) : experience;
+  if (education !== undefined) data.education = typeof education === 'string' ? JSON.parse(education) : education;
+  if (customBlocks !== undefined) data.customBlocks = typeof customBlocks === 'string' ? JSON.parse(customBlocks) : customBlocks;
+  if (openToWork !== undefined) data.openToWork = openToWork === true || openToWork === 'true';
+  if (openToHire !== undefined) data.openToHire = openToHire === true || openToHire === 'true';
+  if (profileTheme !== undefined) data.profileTheme = typeof profileTheme === 'string' ? JSON.parse(profileTheme) : profileTheme;
+  if (customCTA !== undefined) data.customCTA = typeof customCTA === 'string' ? JSON.parse(customCTA) : customCTA;
 
   // Upload avatar/cover
   if (req.files?.avatar?.[0]) {
@@ -160,6 +206,8 @@ router.patch('/me', authMiddleware, upload.fields([
       id: true, username: true, displayName: true, avatar: true, cover: true,
       bio: true, website: true, location: true, skills: true, socialLinks: true,
       specialization: true, languages: true, birthDate: true,
+      headline: true, experience: true, education: true, customBlocks: true,
+      openToWork: true, openToHire: true, profileTheme: true, customCTA: true,
     },
   });
 

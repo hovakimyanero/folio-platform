@@ -4,19 +4,26 @@ import * as Switch from '@radix-ui/react-switch';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Save, Upload, Camera } from 'lucide-react';
+import { Save, Upload, Camera, Briefcase, GraduationCap, Plus, X } from 'lucide-react';
 
 export default function Settings() {
   const { user, updateProfile } = useAuth();
   const { showToast } = useToast();
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [headline, setHeadline] = useState(user?.headline || '');
   const [website, setWebsite] = useState(user?.website || '');
   const [location, setLocation] = useState(user?.location || '');
   const [skills, setSkills] = useState(user?.skills?.join(', ') || '');
   const [specialization, setSpecialization] = useState(user?.specialization?.join(', ') || '');
   const [languages, setLanguages] = useState(user?.languages?.join(', ') || '');
   const [birthDate, setBirthDate] = useState(user?.birthDate ? user.birthDate.slice(0, 10) : '');
+  const [openToWork, setOpenToWork] = useState(user?.openToWork || false);
+  const [openToHire, setOpenToHire] = useState(user?.openToHire || false);
+  const [experience, setExperience] = useState(user?.experience || []);
+  const [education, setEducation] = useState(user?.education || []);
+  const [ctaLabel, setCtaLabel] = useState(user?.customCTA?.label || '');
+  const [ctaUrl, setCtaUrl] = useState(user?.customCTA?.url || '');
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState('profile');
   const avatarRef = useRef(null);
@@ -60,6 +67,12 @@ export default function Settings() {
       formData.append('specialization', JSON.stringify(specialization.split(',').map(s => s.trim()).filter(Boolean)));
       formData.append('languages', JSON.stringify(languages.split(',').map(s => s.trim()).filter(Boolean)));
       formData.append('birthDate', birthDate || '');
+      formData.append('headline', headline);
+      formData.append('openToWork', openToWork);
+      formData.append('openToHire', openToHire);
+      formData.append('experience', JSON.stringify(experience));
+      formData.append('education', JSON.stringify(education));
+      formData.append('customCTA', JSON.stringify({ label: ctaLabel, url: ctaUrl }));
       if (avatarFile) formData.append('avatar', avatarFile);
       if (coverFile) formData.append('cover', coverFile);
       await updateProfile(formData);
@@ -158,6 +171,7 @@ export default function Settings() {
               </div>
 
               <div><label className="input-label">Имя</label><input className="input" value={displayName} onChange={e => setDisplayName(e.target.value)} /></div>
+              <div><label className="input-label">Заголовок / Headline</label><input className="input" value={headline} onChange={e => setHeadline(e.target.value)} placeholder="Senior UI Designer at Company" /></div>
               <div><label className="input-label">О себе</label><textarea className="input" rows={4} value={bio} onChange={e => setBio(e.target.value)} style={{ resize: 'vertical' }} /></div>
               <div><label className="input-label">Сайт</label><input className="input" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://" /></div>
               <div><label className="input-label">Местоположение</label><input className="input" value={location} onChange={e => setLocation(e.target.value)} /></div>
@@ -165,6 +179,56 @@ export default function Settings() {
               <div><label className="input-label">Специализация (через запятую)</label><input className="input" value={specialization} onChange={e => setSpecialization(e.target.value)} placeholder="Веб-дизайн, Графический дизайн" /></div>
               <div><label className="input-label">Языки (через запятую)</label><input className="input" value={languages} onChange={e => setLanguages(e.target.value)} placeholder="Русский, English" /></div>
               <div><label className="input-label">Дата рождения</label><input className="input" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} /></div>
+
+              {/* Open to work / hire */}
+              <div style={{ display: 'flex', gap: 16 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
+                  <input type="checkbox" checked={openToWork} onChange={e => setOpenToWork(e.target.checked)} style={{ width: 18, height: 18, accentColor: 'var(--accent)' }} />
+                  <Briefcase size={14} /> Ищу работу
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
+                  <input type="checkbox" checked={openToHire} onChange={e => setOpenToHire(e.target.checked)} style={{ width: 18, height: 18, accentColor: 'var(--accent)' }} />
+                  <Briefcase size={14} /> Нанимаю
+                </label>
+              </div>
+
+              {/* Experience */}
+              <div>
+                <label className="input-label">Опыт работы</label>
+                {experience.map((exp, i) => (
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 12, alignItems: 'start' }}>
+                    <input className="input" placeholder="Должность" value={exp.title || ''} onChange={e => { const arr = [...experience]; arr[i] = { ...arr[i], title: e.target.value }; setExperience(arr); }} />
+                    <input className="input" placeholder="Компания" value={exp.company || ''} onChange={e => { const arr = [...experience]; arr[i] = { ...arr[i], company: e.target.value }; setExperience(arr); }} />
+                    <button onClick={() => setExperience(prev => prev.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff6b6b', padding: '10px 4px' }}><X size={14} /></button>
+                    <input className="input" placeholder="Период (2020–2023)" value={exp.period || ''} onChange={e => { const arr = [...experience]; arr[i] = { ...arr[i], period: e.target.value }; setExperience(arr); }} style={{ gridColumn: '1/3' }} />
+                  </div>
+                ))}
+                <button onClick={() => setExperience(prev => [...prev, { title: '', company: '', period: '' }])} className="btn btn-ghost btn-sm"><Plus size={12} /> Добавить</button>
+              </div>
+
+              {/* Education */}
+              <div>
+                <label className="input-label">Образование</label>
+                {education.map((edu, i) => (
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 12, alignItems: 'start' }}>
+                    <input className="input" placeholder="Учебное заведение" value={edu.institution || ''} onChange={e => { const arr = [...education]; arr[i] = { ...arr[i], institution: e.target.value }; setEducation(arr); }} />
+                    <input className="input" placeholder="Степень / Программа" value={edu.degree || ''} onChange={e => { const arr = [...education]; arr[i] = { ...arr[i], degree: e.target.value }; setEducation(arr); }} />
+                    <button onClick={() => setEducation(prev => prev.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff6b6b', padding: '10px 4px' }}><X size={14} /></button>
+                    <input className="input" placeholder="Период" value={edu.period || ''} onChange={e => { const arr = [...education]; arr[i] = { ...arr[i], period: e.target.value }; setEducation(arr); }} style={{ gridColumn: '1/3' }} />
+                  </div>
+                ))}
+                <button onClick={() => setEducation(prev => [...prev, { institution: '', degree: '', period: '' }])} className="btn btn-ghost btn-sm"><Plus size={12} /> Добавить</button>
+              </div>
+
+              {/* Custom CTA */}
+              <div>
+                <label className="input-label">Кнопка действия (CTA)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <input className="input" placeholder="Текст кнопки" value={ctaLabel} onChange={e => setCtaLabel(e.target.value)} />
+                  <input className="input" placeholder="URL" value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} />
+                </div>
+              </div>
+
               <button className="btn btn-primary" onClick={handleSave} disabled={saving} style={{ alignSelf: 'flex-start', opacity: saving ? 0.6 : 1 }}><Save size={14} /> {saving ? 'Сохранение...' : 'Сохранить'}</button>
             </div>
           </Tabs.Content>

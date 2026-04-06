@@ -9,6 +9,7 @@ import BackgroundCanvas from './components/BackgroundCanvas';
 
 // Pages
 import Home from './pages/Home';
+import Feed from './pages/Feed';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import Upload from './pages/Upload';
@@ -33,6 +34,8 @@ import Privacy from './pages/Privacy';
 import CookiesPage from './pages/CookiesPage';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
+import Marketplace from './pages/Marketplace';
+import Analytics from './pages/Analytics';
 import CookieBanner from './components/CookieBanner';
 
 function ProtectedRoute({ children }) {
@@ -66,6 +69,7 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/feed" element={<Feed />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
@@ -84,6 +88,8 @@ export default function App() {
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/events" element={<Events />} />
           <Route path="/jobs" element={<Jobs />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />

@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const data = await apiJson('/auth/login', {
       method: 'POST',
-      body: { email, password },
+      body: { login: email, password },
     });
     await saveTokens(data.accessToken, data.refreshToken);
     setUser(data.user);

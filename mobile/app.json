@@ -21,6 +21,11 @@
     },
     "extra": {
       "apiBaseUrl": "https://folio-platform-folio.up.railway.app/api"
-    }
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font",
+      "expo-secure-store"
+    ]
   }
 }

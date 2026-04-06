@@ -5,7 +5,15 @@ import * as Avatar from '@radix-ui/react-avatar';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { MapPin, Globe, UserPlus, UserCheck, Calendar, Heart, Eye } from 'lucide-react';
+import { MapPin, Globe, UserPlus, UserCheck, Calendar, Heart, Eye, Award, Briefcase, GraduationCap, Star, Shield } from 'lucide-react';
+
+const LEVEL_LABELS = {
+  NEWCOMER: { label: 'Новичок', color: '#94a3b8' },
+  RISING: { label: 'Растущий', color: '#6366f1' },
+  ESTABLISHED: { label: 'Признанный', color: '#10b981' },
+  TOP: { label: 'Топ', color: '#f59e0b' },
+  LEGEND: { label: 'Легенда', color: '#ef4444' },
+};
 
 export default function Profile() {
   const { username } = useParams();
@@ -62,8 +70,34 @@ export default function Profile() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="profile-name-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div style={{ minWidth: 0 }}>
-                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em' }}>{profile.displayName || profile.username}</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em' }}>{profile.displayName || profile.username}</h1>
+                  {profile.isVerified && <Shield size={16} color="var(--accent)" />}
+                  {profile.isPro && (
+                    <span style={{ padding: '2px 8px', borderRadius: 100, background: 'linear-gradient(135deg, #f59e0b, #ef4444)', fontSize: 10, fontWeight: 700, color: '#fff', letterSpacing: '0.05em' }}>PRO</span>
+                  )}
+                  {profile.level && LEVEL_LABELS[profile.level] && (
+                    <span style={{ padding: '2px 10px', borderRadius: 100, background: `${LEVEL_LABELS[profile.level].color}20`, color: LEVEL_LABELS[profile.level].color, fontSize: 11, fontWeight: 600 }}>
+                      {LEVEL_LABELS[profile.level].label}
+                    </span>
+                  )}
+                </div>
                 <div style={{ fontSize: 14, color: 'var(--text-3)' }}>@{profile.username}</div>
+                {profile.headline && <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 4 }}>{profile.headline}</div>}
+                {(profile.openToWork || profile.openToHire) && (
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    {profile.openToWork && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 12px', borderRadius: 100, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 11, color: '#10b981', fontWeight: 500 }}>
+                        <Briefcase size={11} /> Ищу работу
+                      </span>
+                    )}
+                    {profile.openToHire && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 12px', borderRadius: 100, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11, color: '#6366f1', fontWeight: 500 }}>
+                        <Briefcase size={11} /> Нанимаю
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               {!isOwn && me && (
                 <button className={`btn ${following ? 'btn-secondary' : 'btn-primary'}`} onClick={toggleFollow} style={{ flexShrink: 0 }}>
@@ -89,6 +123,21 @@ export default function Profile() {
           <span><strong>{profile._count.followers}</strong> <span style={{ color: 'var(--text-3)' }}>подписчиков</span></span>
           <span><strong>{profile._count.following}</strong> <span style={{ color: 'var(--text-3)' }}>подписок</span></span>
         </div>
+
+        {/* Badges */}
+        {profile.badges?.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+            {profile.badges.map(ub => (
+              <div key={ub.id} title={ub.badge.description} style={{
+                display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
+                borderRadius: 100, background: 'linear-gradient(135deg, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.05))',
+                border: '1px solid rgba(var(--accent-rgb), 0.2)', fontSize: 12, color: 'var(--accent)',
+              }}>
+                <Award size={12} /> {ub.badge.name}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Skills */}
         {profile.skills?.length > 0 && (
@@ -150,7 +199,59 @@ export default function Profile() {
             )}
           </Tabs.Content>
           <Tabs.Content value="liked"><div className="empty-state"><p className="empty-state-text">Понравившиеся проекты появятся здесь.</p></div></Tabs.Content>
-          <Tabs.Content value="about"><div style={{ fontSize: 15, color: 'var(--text-2)', lineHeight: 1.8 }}>{profile.bio || 'Информация не указана.'}</div></Tabs.Content>
+          <Tabs.Content value="about">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+              {profile.bio && <div style={{ fontSize: 15, color: 'var(--text-2)', lineHeight: 1.8 }}>{profile.bio}</div>}
+
+              {/* Experience */}
+              {profile.experience?.length > 0 && (
+                <div>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
+                    <Briefcase size={16} color="var(--text-3)" /> Опыт
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {profile.experience.map((exp, i) => (
+                      <div key={i} style={{ padding: '16px 20px', borderRadius: 'var(--radius-sm)', background: 'var(--card)', border: '1px solid var(--glass-border)' }}>
+                        <div style={{ fontWeight: 500, fontSize: 14 }}>{exp.title}</div>
+                        <div style={{ fontSize: 13, color: 'var(--accent)', marginTop: 2 }}>{exp.company}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{exp.period}</div>
+                        {exp.description && <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 8, lineHeight: 1.6 }}>{exp.description}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Education */}
+              {profile.education?.length > 0 && (
+                <div>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
+                    <GraduationCap size={16} color="var(--text-3)" /> Образование
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {profile.education.map((edu, i) => (
+                      <div key={i} style={{ padding: '16px 20px', borderRadius: 'var(--radius-sm)', background: 'var(--card)', border: '1px solid var(--glass-border)' }}>
+                        <div style={{ fontWeight: 500, fontSize: 14 }}>{edu.institution}</div>
+                        <div style={{ fontSize: 13, color: 'var(--accent)', marginTop: 2 }}>{edu.degree}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{edu.period}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Custom CTA */}
+              {profile.customCTA?.label && profile.customCTA?.url && (
+                <a href={profile.customCTA.url} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
+                  {profile.customCTA.label}
+                </a>
+              )}
+
+              {!profile.bio && !profile.experience?.length && !profile.education?.length && (
+                <div style={{ fontSize: 15, color: 'var(--text-3)' }}>Информация не указана.</div>
+              )}
+            </div>
+          </Tabs.Content>
         </Tabs.Root>
       </div>
     </div>

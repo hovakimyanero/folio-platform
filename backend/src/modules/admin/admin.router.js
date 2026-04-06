@@ -186,4 +186,136 @@ router.delete('/challenges/:id', async (req, res) => {
   res.json({ message: 'Challenge deleted' });
 });
 
+// ═══ WEEKLY PICKS ═══
+
+router.get('/weekly-picks', async (req, res) => {
+  const picks = await req.prisma.weeklyPick.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+    include: {
+      project: {
+        include: {
+          author: { select: { id: true, username: true, displayName: true, avatar: true } },
+        },
+      },
+      curator: { select: { id: true, username: true, displayName: true } },
+    },
+  });
+  res.json({ picks });
+});
+
+router.post('/weekly-picks', async (req, res) => {
+  const { projectId, curatorNote, weekLabel } = req.body;
+  if (!projectId) return res.status(400).json({ error: { message: 'projectId is required' } });
+
+  try {
+    const pick = await req.prisma.weeklyPick.create({
+      data: {
+        projectId,
+        curatorId: req.userId,
+        curatorNote: curatorNote || null,
+        weekLabel: weekLabel || null,
+      },
+      include: {
+        project: { include: { author: { select: { id: true, username: true, displayName: true } } } },
+      },
+    });
+
+    // Update project's featured count and author's featured count
+    await req.prisma.project.update({
+      where: { id: projectId },
+      data: { featured: true },
+    });
+    await req.prisma.user.update({
+      where: { id: pick.project.authorId },
+      data: { featuredCount: { increment: 1 } },
+    });
+
+    // Notify the author
+    const project = await req.prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
+    if (project) {
+      await req.prisma.notification.create({
+        data: {
+          type: 'WEEKLY_PICK',
+          recipientId: project.authorId,
+          actorId: req.userId,
+          entityType: 'project',
+          entityId: projectId,
+        },
+      });
+      req.io?.to(project.authorId).emit('notification', { type: 'WEEKLY_PICK' });
+    }
+
+    res.status(201).json({ pick });
+  } catch (err) {
+    console.error('Weekly pick error:', err);
+    res.status(500).json({ error: { message: 'Failed to create weekly pick' } });
+  }
+});
+
+router.delete('/weekly-picks/:id', async (req, res) => {
+  await req.prisma.weeklyPick.delete({ where: { id: req.params.id } });
+  res.json({ message: 'Weekly pick removed' });
+});
+
+// ═══ BADGES ═══
+
+router.get('/badges', async (req, res) => {
+  const badges = await req.prisma.badge.findMany({
+    orderBy: { createdAt: 'asc' },
+    include: { _count: { select: { users: true } } },
+  });
+  res.json({ badges });
+});
+
+router.post('/badges', async (req, res) => {
+  const { name, description, icon, criteria } = req.body;
+  if (!name) return res.status(400).json({ error: { message: 'Name is required' } });
+
+  const badge = await req.prisma.badge.create({
+    data: { name, description: description || '', icon: icon || '', criteria: criteria || {} },
+  });
+  res.status(201).json({ badge });
+});
+
+router.patch('/badges/:id', async (req, res) => {
+  const { name, description, icon, criteria } = req.body;
+  const data = {};
+  if (name !== undefined) data.name = name;
+  if (description !== undefined) data.description = description;
+  if (icon !== undefined) data.icon = icon;
+  if (criteria !== undefined) data.criteria = criteria;
+
+  const badge = await req.prisma.badge.update({
+    where: { id: req.params.id },
+    data,
+  });
+  res.json({ badge });
+});
+
+// ═══ AWARD BADGE MANUALLY ═══
+
+router.post('/badges/:badgeId/award/:userId', async (req, res) => {
+  try {
+    const ub = await req.prisma.userBadge.create({
+      data: { userId: req.params.userId, badgeId: req.params.badgeId },
+    });
+    // Notify user
+    await req.prisma.notification.create({
+      data: {
+        type: 'BADGE_EARNED',
+        recipientId: req.params.userId,
+        actorId: req.userId,
+        entityType: 'badge',
+        entityId: req.params.badgeId,
+      },
+    });
+    req.io?.to(req.params.userId).emit('notification', { type: 'BADGE_EARNED' });
+    res.status(201).json({ userBadge: ub });
+  } catch (err) {
+    if (err.code === 'P2002') return res.status(409).json({ error: { message: 'Already awarded' } });
+    res.status(500).json({ error: { message: 'Failed to award badge' } });
+  }
+});
+
 export default router;

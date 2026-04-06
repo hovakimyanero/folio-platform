@@ -23,7 +23,13 @@ import adminRouter from './modules/admin/admin.router.js';
 import blogRouter from './modules/blog/blog.router.js';
 import eventsRouter from './modules/events/events.router.js';
 import jobsRouter from './modules/jobs/jobs.router.js';
-import { updateTrendScores } from './modules/projects/projects.service.js';
+import feedRouter from './modules/feed/feed.router.js';
+import tagsRouter from './modules/tags/tags.router.js';
+import savesRouter from './modules/saves/saves.router.js';
+import repostsRouter from './modules/reposts/reposts.router.js';
+import marketplaceRouter from './modules/marketplace/marketplace.router.js';
+import analyticsRouter from './modules/analytics/analytics.router.js';
+import { updateTrendScoresV2, updateReputationScores, checkAndAwardBadges, publishScheduledProjects } from './modules/reputation/reputation.service.js';
 import { autoSelectChallengeWinners, bootstrapAdmin } from './modules/challenges/challenges.service.js';
 import { authMiddleware } from './common/auth.middleware.js';
 import { socketHandler } from './modules/messages/socket.handler.js';
@@ -97,6 +103,12 @@ app.use('/api/admin', authMiddleware, adminRouter);
 app.use('/api/blog', blogRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/jobs', jobsRouter);
+app.use('/api/feed', feedRouter);
+app.use('/api/tags', tagsRouter);
+app.use('/api/saves', authMiddleware, savesRouter);
+app.use('/api/reposts', authMiddleware, repostsRouter);
+app.use('/api/marketplace', marketplaceRouter);
+app.use('/api/analytics', authMiddleware, analyticsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -118,8 +130,8 @@ app.use((err, req, res, next) => {
 // ═══ Cron: Update trend scores every 10 minutes ═══
 cron.schedule('*/10 * * * *', async () => {
   try {
-    await updateTrendScores(prisma);
-    console.log('[CRON] Trend scores updated');
+    await updateTrendScoresV2(prisma);
+    console.log('[CRON] Trend scores v2 updated');
   } catch (err) {
     console.error('[CRON] Error updating trends:', err);
   }
@@ -132,6 +144,35 @@ cron.schedule('0 * * * *', async () => {
     if (count > 0) console.log(`[CRON] Auto-selected winners for ${count} challenges`);
   } catch (err) {
     console.error('[CRON] Error selecting challenge winners:', err);
+  }
+});
+
+// ═══ Cron: Publish scheduled projects every minute ═══
+cron.schedule('* * * * *', async () => {
+  try {
+    await publishScheduledProjects(prisma);
+  } catch (err) {
+    console.error('[CRON] Error publishing scheduled projects:', err);
+  }
+});
+
+// ═══ Cron: Update reputation scores daily at 3 AM ═══
+cron.schedule('0 3 * * *', async () => {
+  try {
+    await updateReputationScores(prisma);
+    console.log('[CRON] Reputation scores updated');
+  } catch (err) {
+    console.error('[CRON] Error updating reputation:', err);
+  }
+});
+
+// ═══ Cron: Check and award badges daily at 3:30 AM ═══
+cron.schedule('30 3 * * *', async () => {
+  try {
+    await checkAndAwardBadges(prisma);
+    console.log('[CRON] Badges checked and awarded');
+  } catch (err) {
+    console.error('[CRON] Error checking badges:', err);
   }
 });
 

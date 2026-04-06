@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import api from '../utils/api';
 import { useToast } from '../context/ToastContext';
-import { Shield, Users, Flag, BarChart3, Ban, Star, Trophy, Plus, Trash2, Edit3 } from 'lucide-react';
+import { Shield, Users, Flag, BarChart3, Ban, Star, Trophy, Plus, Trash2, Edit3, Award, Bookmark } from 'lucide-react';
 
 export default function AdminPanel() {
   const { showToast } = useToast();
@@ -11,13 +11,20 @@ export default function AdminPanel() {
   const [reports, setReports] = useState([]);
   const [users, setUsers] = useState([]);
   const [challenges, setChallenges] = useState([]);
+  const [picks, setPicks] = useState([]);
+  const [badges, setBadges] = useState([]);
   const [newChallenge, setNewChallenge] = useState({ title: '', description: '', rules: '', deadline: '' });
+  const [newPickId, setNewPickId] = useState('');
+  const [newPickNote, setNewPickNote] = useState('');
+  const [newBadge, setNewBadge] = useState({ name: '', description: '', icon: '' });
 
   useEffect(() => {
     api.get('/admin/analytics').then(({ data }) => setAnalytics(data)).catch(() => {});
     api.get('/admin/reports').then(({ data }) => setReports(data.reports)).catch(() => {});
     api.get('/admin/users').then(({ data }) => setUsers(data.users)).catch(() => {});
     api.get('/admin/challenges').then(({ data }) => setChallenges(data.challenges)).catch(() => {});
+    api.get('/admin/weekly-picks').then(({ data }) => setPicks(data.picks)).catch(() => {});
+    api.get('/admin/badges').then(({ data }) => setBadges(data.badges)).catch(() => {});
   }, []);
 
   const banUser = async (userId) => {
@@ -61,7 +68,7 @@ export default function AdminPanel() {
 
         <Tabs.Root value={tab} onValueChange={setTab}>
           <Tabs.List style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', marginBottom: 40, width: 'fit-content' }}>
-            {[['analytics', 'Аналитика', BarChart3], ['reports', 'Жалобы', Flag], ['users', 'Пользователи', Users], ['challenges', 'Челленджи', Trophy]].map(([val, label, Icon]) => (
+            {[['analytics', 'Аналитика', BarChart3], ['reports', 'Жалобы', Flag], ['users', 'Пользователи', Users], ['challenges', 'Челленджи', Trophy], ['picks', 'Выбор недели', Award], ['badges', 'Бейджи', Star]].map(([val, label, Icon]) => (
               <Tabs.Trigger key={val} value={val} style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === val ? 'var(--text)' : 'var(--text-3)', background: tab === val ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><Icon size={14} /> {label}</Tabs.Trigger>
             ))}
           </Tabs.List>
@@ -138,6 +145,75 @@ export default function AdminPanel() {
               ))}
               {challenges.length === 0 && <div className="empty-state"><h3 className="empty-state-title">Нет челленджей</h3></div>}
             </div>
+          </Tabs.Content>
+
+          {/* Weekly Picks Tab */}
+          <Tabs.Content value="picks">
+            <div style={{ padding: 24, borderRadius: 'var(--radius-md)', background: 'var(--card)', border: '1px solid var(--glass-border)', marginBottom: 24 }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Award size={16} /> Добавить в выбор недели</h3>
+              <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <input className="input" value={newPickId} onChange={e => setNewPickId(e.target.value)} placeholder="ID проекта" style={{ flex: 1 }} />
+                <input className="input" value={newPickNote} onChange={e => setNewPickNote(e.target.value)} placeholder="Заметка куратора" style={{ flex: 2 }} />
+              </div>
+              <button className="btn btn-primary" onClick={async () => {
+                if (!newPickId) return;
+                try {
+                  const { data } = await api.post('/admin/weekly-picks', { projectId: newPickId, curatorNote: newPickNote });
+                  setPicks(prev => [data.pick, ...prev]);
+                  setNewPickId(''); setNewPickNote('');
+                  showToast('Добавлено в выбор недели', 'success');
+                } catch { showToast('Ошибка', 'error'); }
+              }}>Добавить</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {picks.map(pk => (
+                <div key={pk.id} style={{ padding: 20, borderRadius: 'var(--radius-sm)', background: 'var(--card)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    {pk.project?.cover && <img src={pk.project.cover} style={{ width: 48, height: 36, borderRadius: 4, objectFit: 'cover' }} alt="" />}
+                    <div>
+                      <div style={{ fontWeight: 500, fontSize: 14 }}>{pk.project?.title}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-3)' }}>от {pk.project?.author?.displayName} {pk.curatorNote && `· "${pk.curatorNote}"`}</div>
+                    </div>
+                  </div>
+                  <button className="btn btn-ghost btn-sm" onClick={async () => {
+                    try { await api.delete(`/admin/weekly-picks/${pk.id}`); setPicks(prev => prev.filter(p => p.id !== pk.id)); showToast('Удалено', 'success'); } catch {}
+                  }} style={{ color: '#ff6b6b' }}><Trash2 size={12} /></button>
+                </div>
+              ))}
+              {picks.length === 0 && <div className="empty-state"><h3 className="empty-state-title">Нет выбранных проектов</h3></div>}
+            </div>
+          </Tabs.Content>
+
+          {/* Badges Tab */}
+          <Tabs.Content value="badges">
+            <div style={{ padding: 24, borderRadius: 'var(--radius-md)', background: 'var(--card)', border: '1px solid var(--glass-border)', marginBottom: 24 }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Star size={16} /> Создать бейдж</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <input className="input" value={newBadge.name} onChange={e => setNewBadge(p => ({ ...p, name: e.target.value }))} placeholder="Название" />
+                <input className="input" value={newBadge.description} onChange={e => setNewBadge(p => ({ ...p, description: e.target.value }))} placeholder="Описание" />
+                <input className="input" value={newBadge.icon} onChange={e => setNewBadge(p => ({ ...p, icon: e.target.value }))} placeholder="Иконка (emoji)" />
+              </div>
+              <button className="btn btn-primary" onClick={async () => {
+                if (!newBadge.name) return;
+                try {
+                  const { data } = await api.post('/admin/badges', newBadge);
+                  setBadges(prev => [...prev, data.badge]);
+                  setNewBadge({ name: '', description: '', icon: '' });
+                  showToast('Бейдж создан', 'success');
+                } catch { showToast('Ошибка', 'error'); }
+              }}>Создать</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+              {badges.map(b => (
+                <div key={b.id} style={{ padding: 20, borderRadius: 'var(--radius-sm)', background: 'var(--card)', border: '1px solid var(--glass-border)' }}>
+                  <div style={{ fontSize: 28, marginBottom: 8 }}>{b.icon || '🏆'}</div>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{b.name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 8 }}>{b.description}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{b._count?.users || 0} получили</div>
+                </div>
+              ))}
+            </div>
+            {badges.length === 0 && <div className="empty-state"><h3 className="empty-state-title">Нет бейджей</h3></div>}
           </Tabs.Content>
         </Tabs.Root>
       </div>

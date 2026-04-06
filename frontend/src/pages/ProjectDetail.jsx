@@ -5,7 +5,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Heart, Eye, MessageCircle, Share2, Bookmark, UserPlus, UserCheck, ArrowLeft, Trash2, Plus, X } from 'lucide-react';
+import { Heart, Eye, MessageCircle, Share2, Bookmark, UserPlus, UserCheck, ArrowLeft, Trash2, Plus, X, Repeat2, BookmarkCheck, Lock, Shield } from 'lucide-react';
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -19,6 +19,10 @@ export default function ProjectDetail() {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [following, setFollowing] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saveCount, setSaveCount] = useState(0);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [requiresPassword, setRequiresPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [collectionsOpen, setCollectionsOpen] = useState(false);
   const [collections, setCollections] = useState([]);
@@ -28,11 +32,18 @@ export default function ProjectDetail() {
     setLoading(true);
     api.get(`/projects/${id}`)
       .then(({ data }) => {
-        setProject(data.project);
-        setSimilar(data.similar || []);
-        setLiked(data.project.isLiked);
-        setLikeCount(data.project.likeCount);
-        setFollowing(data.project.isFollowing);
+        if (data.requiresPassword) {
+          setRequiresPassword(true);
+          setProject(data.project);
+        } else {
+          setProject(data.project);
+          setSimilar(data.similar || []);
+          setLiked(data.project.isLiked);
+          setLikeCount(data.project.likeCount);
+          setFollowing(data.project.isFollowing);
+          setSaved(data.project.isSaved);
+          setSaveCount(data.project._count?.saves || 0);
+        }
       })
       .catch(() => setProject(null))
       .finally(() => setLoading(false));
@@ -69,6 +80,50 @@ export default function ProjectDetail() {
         showToast('Вы подписались!', 'success');
       }
     } catch {}
+  };
+
+  const toggleSave = async () => {
+    if (!user) return showToast('Войдите, чтобы сохранять', 'error');
+    try {
+      if (saved) {
+        await api.delete(`/saves/${id}`);
+        setSaved(false);
+        setSaveCount(c => c - 1);
+      } else {
+        await api.post(`/saves/${id}`);
+        setSaved(true);
+        setSaveCount(c => c + 1);
+        showToast('Сохранено!', 'success');
+      }
+    } catch {}
+  };
+
+  const handleRepost = async () => {
+    if (!user) return showToast('Войдите, чтобы делать репосты', 'error');
+    try {
+      await api.post(`/reposts/${id}`);
+      showToast('Репост сделан!', 'success');
+    } catch (err) {
+      if (err.response?.status === 409) showToast('Вы уже сделали репост', 'info');
+    }
+  };
+
+  const submitPassword = async () => {
+    try {
+      const { data } = await api.get(`/projects/${id}?password=${encodeURIComponent(passwordInput)}`);
+      if (!data.requiresPassword) {
+        setRequiresPassword(false);
+        setProject(data.project);
+        setSimilar(data.similar || []);
+        setLiked(data.project.isLiked);
+        setLikeCount(data.project.likeCount);
+        setFollowing(data.project.isFollowing);
+        setSaved(data.project.isSaved);
+        setSaveCount(data.project._count?.saves || 0);
+      } else {
+        showToast('Неверный пароль', 'error');
+      }
+    } catch { showToast('Ошибка', 'error'); }
   };
 
   const submitComment = async () => {
@@ -129,6 +184,28 @@ export default function ProjectDetail() {
   if (loading) return <div style={{ minHeight: '100vh', paddingTop: 200, textAlign: 'center', color: 'var(--text-3)' }}>Загрузка...</div>;
   if (!project) return <div style={{ minHeight: '100vh', paddingTop: 200, textAlign: 'center' }}><h2>Проект не найден</h2></div>;
 
+  if (requiresPassword) {
+    return (
+      <div style={{ paddingTop: 200, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 400, margin: '0 auto', textAlign: 'center', padding: '0 24px' }}>
+          <Lock size={48} color="var(--text-3)" style={{ marginBottom: 24 }} />
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 32, marginBottom: 12 }}>Защищённый проект</h2>
+          <p style={{ color: 'var(--text-3)', marginBottom: 32 }}>Введите пароль для просмотра</p>
+          <input
+            className="input"
+            type="password"
+            value={passwordInput}
+            onChange={e => setPasswordInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && submitPassword()}
+            placeholder="Пароль"
+            style={{ marginBottom: 16, textAlign: 'center' }}
+          />
+          <button className="btn btn-primary" onClick={submitPassword} style={{ width: '100%' }}>Открыть</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Tooltip.Provider>
     <div style={{ paddingTop: 100, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
@@ -170,9 +247,25 @@ export default function ProjectDetail() {
 
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <button className="btn-icon" onClick={openCollections}><Bookmark size={16} color="var(--text-2)" /></button>
+                <button onClick={toggleSave} className="btn-icon" style={{ background: saved ? 'rgba(var(--accent-rgb), 0.1)' : undefined, borderColor: saved ? 'var(--accent)' : undefined }}>
+                  {saved ? <BookmarkCheck size={16} color="var(--accent)" /> : <Bookmark size={16} color="var(--text-2)" />}
+                </button>
               </Tooltip.Trigger>
-              <Tooltip.Content sideOffset={6}>Сохранить в коллекцию</Tooltip.Content>
+              <Tooltip.Content sideOffset={6}>{saved ? 'Сохранено' : 'Сохранить'} ({saveCount})</Tooltip.Content>
+            </Tooltip.Root>
+
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <button className="btn-icon" onClick={handleRepost}><Repeat2 size={16} color="var(--text-2)" /></button>
+              </Tooltip.Trigger>
+              <Tooltip.Content sideOffset={6}>Репост</Tooltip.Content>
+            </Tooltip.Root>
+
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <button className="btn-icon" onClick={openCollections}><Plus size={16} color="var(--text-2)" /></button>
+              </Tooltip.Trigger>
+              <Tooltip.Content sideOffset={6}>В коллекцию</Tooltip.Content>
             </Tooltip.Root>
 
             <Tooltip.Root>
@@ -213,6 +306,7 @@ export default function ProjectDetail() {
         <div style={{ display: 'flex', gap: 32, marginBottom: 40, fontSize: 13, color: 'var(--text-3)' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Heart size={14} /> {likeCount}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Eye size={14} /> {project.viewCount}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Bookmark size={14} /> {saveCount}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MessageCircle size={14} /> {comments.length}</span>
         </div>
 
@@ -220,6 +314,86 @@ export default function ProjectDetail() {
         {project.description && (
           <div style={{ fontSize: 15, color: 'var(--text-2)', lineHeight: 1.8, marginBottom: 40, maxWidth: 700 }}>
             {project.description}
+          </div>
+        )}
+
+        {/* Case study blocks */}
+        {project.blocks?.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 48, maxWidth: 700 }}>
+            {project.blocks.map(block => {
+              switch (block.type) {
+                case 'HEADING':
+                  return <h2 key={block.id} style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em' }}>{block.content}</h2>;
+                case 'TEXT':
+                  return <div key={block.id} style={{ fontSize: 16, color: 'var(--text-2)', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{block.content}</div>;
+                case 'IMAGE':
+                  return (
+                    <div key={block.id} style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                      <img src={block.mediaUrl} alt="" style={{ width: '100%' }} />
+                    </div>
+                  );
+                case 'IMAGE_GALLERY':
+                  return (
+                    <div key={block.id} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+                      {(block.content || '').split(',').map((url, i) => (
+                        <div key={i} style={{ borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+                          <img src={url.trim()} alt="" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
+                        </div>
+                      ))}
+                    </div>
+                  );
+                case 'VIDEO':
+                  return (
+                    <div key={block.id} style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                      <video src={block.mediaUrl} controls style={{ width: '100%' }} />
+                    </div>
+                  );
+                case 'EMBED':
+                  return (
+                    <div key={block.id} style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', aspectRatio: '16/9' }}>
+                      <iframe src={block.content} style={{ width: '100%', height: '100%', border: 'none' }} title="Embed" allowFullScreen />
+                    </div>
+                  );
+                case 'QUOTE':
+                  return (
+                    <blockquote key={block.id} style={{
+                      padding: '20px 24px', borderLeft: '3px solid var(--accent)',
+                      background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-sm)',
+                      fontSize: 18, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.7,
+                    }}>
+                      {block.content}
+                    </blockquote>
+                  );
+                case 'DIVIDER':
+                  return <hr key={block.id} style={{ border: 'none', borderTop: '1px solid var(--glass-border)', margin: '16px 0' }} />;
+                case 'CODE':
+                  return (
+                    <pre key={block.id} style={{
+                      padding: 20, borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.3)',
+                      fontSize: 13, fontFamily: 'monospace', overflow: 'auto', lineHeight: 1.6,
+                      border: '1px solid var(--glass-border)',
+                    }}>
+                      <code>{block.content}</code>
+                    </pre>
+                  );
+                case 'BEFORE_AFTER':
+                  const urls = (block.content || '').split(',').map(u => u.trim());
+                  return (
+                    <div key={block.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      {urls.map((url, i) => (
+                        <div key={i} style={{ borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative' }}>
+                          <img src={url || block.mediaUrl} alt="" style={{ width: '100%' }} />
+                          <div style={{ position: 'absolute', top: 8, left: 8, padding: '2px 10px', borderRadius: 100, background: 'rgba(0,0,0,0.6)', fontSize: 11, color: 'var(--text-2)' }}>
+                            {i === 0 ? 'До' : 'После'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                default:
+                  return null;
+              }
+            })}
           </div>
         )}
 
