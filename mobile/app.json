@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Folio",
+    "slug": "folio-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#6C5CE7"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.folio.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#6C5CE7"
+      },
+      "package": "com.folio.app"
+    },
+    "extra": {
+      "apiBaseUrl": "https://folio-platform-folio.up.railway.app/api"
+    }
+  }
+}
