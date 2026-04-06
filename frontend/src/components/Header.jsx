@@ -13,7 +13,7 @@ import SearchDialog from './SearchDialog';
 export default function Header() {
   const { user, logout } = useAuth();
   const { showToast } = useToast();
-  const { open: authOpen, setOpen: setAuthOpen } = useAuthDialog();
+  const { open: authOpen, setOpen: setAuthOpen, initialMode: authInitialMode, openAuthDialog } = useAuthDialog();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -121,8 +121,8 @@ export default function Header() {
             </>
           ) : (
             <>
-              <button className="btn-ghost" onClick={() => { setAuthOpen(true); }}>Войти</button>
-              <button className="btn btn-primary btn-sm desktop-only" onClick={() => { setAuthOpen(true); }}>Регистрация</button>
+              <button className="btn-ghost" onClick={() => openAuthDialog('login')}>Войти</button>
+              <button className="btn btn-primary btn-sm desktop-only" onClick={() => openAuthDialog('register')}>Регистрация</button>
             </>
           )}
           <button className="btn-icon mobile-only" onClick={() => setMobileMenu(!mobileMenu)}>
@@ -151,7 +151,7 @@ export default function Header() {
         </div>
       )}
 
-      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} initialMode={authInitialMode} />
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );

@@ -56,7 +56,7 @@ export default function Home() {
           {user ? (
             <Link to="/upload" className="btn btn-primary btn-lg">Загрузить проект</Link>
           ) : (
-            <button className="btn btn-primary btn-lg" onClick={openAuthDialog}>
+            <button className="btn btn-primary btn-lg" onClick={() => openAuthDialog('register')}>
               Начать бесплатно
             </button>
           )}
@@ -106,7 +106,7 @@ export default function Home() {
           <p style={{ fontSize: 17, color: 'var(--text-2)', maxWidth: 440, margin: '28px auto 52px', lineHeight: 1.8, fontWeight: 300 }}>
             Присоединяйтесь к {formatNum(stats.users)}+ креативных профессионалов.
           </p>
-          <button className="btn btn-primary btn-lg" onClick={openAuthDialog}>Создать портфолио</button>
+          <button className="btn btn-primary btn-lg" onClick={() => openAuthDialog('register')}>Создать портфолио</button>
         </section>
       )}
     </div>

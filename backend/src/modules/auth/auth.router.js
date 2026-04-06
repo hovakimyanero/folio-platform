@@ -93,33 +93,9 @@ router.post('/register',
         console.error('Failed to send verification email:', emailErr);
       });
 
-      // Generate tokens
-      const { accessToken, refreshToken } = generateTokens(user.id, user.role);
-
-      // Save session
-      await prisma.session.create({
-        data: {
-          userId: user.id,
-          refreshToken,
-          userAgent: req.headers['user-agent'],
-          ip: req.ip,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
-      });
-
-      setTokenCookies(res, accessToken, refreshToken);
-
       res.status(201).json({
-        user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          displayName: user.displayName,
-          avatar: user.avatar,
-          role: user.role,
-          isVerified: user.isVerified,
-        },
-        accessToken,
+        message: 'Аккаунт создан! Проверьте email для подтверждения.',
+        needsVerification: true,
       });
     } catch (err) {
       console.error('Register error:', err);
@@ -149,6 +125,10 @@ router.post('/login',
 
       if (user.isBanned) {
         return res.status(403).json({ error: { message: 'Account is banned' } });
+      }
+
+      if (!user.isVerified) {
+        return res.status(403).json({ error: { message: 'Подтвердите email перед входом. Проверьте почту.', code: 'EMAIL_NOT_VERIFIED' } });
       }
 
       const valid = await bcrypt.compare(password, user.passwordHash);
@@ -344,6 +324,39 @@ router.post('/verify-email',
     await prisma.emailVerification.delete({ where: { id: verification.id } });
 
     res.json({ message: 'Email verified' });
+  }
+);
+
+// ═══ RESEND VERIFICATION ═══
+
+router.post('/resend-verification',
+  body('email').isEmail().normalizeEmail(),
+  async (req, res) => {
+    const { email } = req.body;
+    const prisma = req.prisma;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || user.isVerified) {
+      return res.json({ message: 'Если email существует и не подтверждён, письмо отправлено.' });
+    }
+
+    // Delete old tokens
+    await prisma.emailVerification.deleteMany({ where: { email } });
+
+    const verifyToken = randomUUID();
+    await prisma.emailVerification.create({
+      data: {
+        email,
+        token: verifyToken,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    sendVerificationEmail(email, verifyToken).catch(err => {
+      console.error('Failed to resend verification email:', err);
+    });
+
+    res.json({ message: 'Если email существует и не подтверждён, письмо отправлено.' });
   }
 );
 

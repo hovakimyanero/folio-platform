@@ -4,12 +4,16 @@ const AuthDialogContext = createContext(null);
 
 export function AuthDialogProvider({ children }) {
   const [open, setOpen] = useState(false);
+  const [initialMode, setInitialMode] = useState('login');
 
-  const openAuthDialog = useCallback(() => setOpen(true), []);
+  const openAuthDialog = useCallback((mode = 'login') => {
+    setInitialMode(mode);
+    setOpen(true);
+  }, []);
   const closeAuthDialog = useCallback(() => setOpen(false), []);
 
   return (
-    <AuthDialogContext.Provider value={{ open, setOpen, openAuthDialog, closeAuthDialog }}>
+    <AuthDialogContext.Provider value={{ open, setOpen, initialMode, openAuthDialog, closeAuthDialog }}>
       {children}
     </AuthDialogContext.Provider>
   );
