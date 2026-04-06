@@ -1,30 +1,36 @@
-import nodemailer from 'nodemailer';
-
-const smtpPort = parseInt(process.env.SMTP_PORT) || 465;
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: smtpPort,
-  secure: smtpPort === 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-});
+// Resend HTTP API (SMTP ports blocked on Railway)
+const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.SMTP_PASS;
 
 export async function sendEmail({ to, subject, html }) {
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to,
-    subject,
-    html,
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: process.env.EMAIL_FROM,
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html,
+    }),
   });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Resend API error ${res.status}: ${err}`);
+  }
+
+  return res.json();
+}
+
+function getFrontendUrl() {
+  const raw = process.env.FRONTEND_URL || '';
+  return raw.split(',')[0].trim().replace(/\/+$/, '');
 }
 
 export async function sendVerificationEmail(email, token) {
-  const url = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+  const url = `${getFrontendUrl()}/verify-email?token=${token}`;
   await sendEmail({
     to: email,
     subject: 'Подтвердите ваш email — Folio',
@@ -40,7 +46,7 @@ export async function sendVerificationEmail(email, token) {
 }
 
 export async function sendPasswordResetEmail(email, token) {
-  const url = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+  const url = `${getFrontendUrl()}/reset-password?token=${token}`;
   await sendEmail({
     to: email,
     subject: 'Сброс пароля — Folio',
