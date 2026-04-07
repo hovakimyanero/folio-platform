@@ -5,7 +5,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Heart, Eye, MessageCircle, Share2, Bookmark, UserPlus, UserCheck, ArrowLeft, Trash2, Plus, X, Repeat2, BookmarkCheck, Lock, Shield } from 'lucide-react';
+import { Heart, Eye, MessageCircle, Share2, Bookmark, UserPlus, UserCheck, ArrowLeft, Trash2, Plus, X, Link2, BookmarkCheck, Lock, Shield } from 'lucide-react';
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -100,12 +100,12 @@ export default function ProjectDetail() {
   };
 
   const handleRepost = async () => {
-    if (!user) return showToast('Войдите, чтобы делать репосты', 'error');
+    const url = `${window.location.origin}/projects/${id}`;
     try {
-      await api.post(`/reposts/${id}`);
-      showToast('Репост сделан!', 'success');
-    } catch (err) {
-      if (err.response?.status === 409) showToast('Вы уже сделали репост', 'info');
+      await navigator.clipboard.writeText(url);
+      showToast('Ссылка скопирована!', 'success');
+    } catch {
+      showToast('Не удалось скопировать ссылку', 'error');
     }
   };
 
@@ -264,9 +264,9 @@ export default function ProjectDetail() {
 
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <button className="btn-icon" onClick={handleRepost}><Repeat2 size={16} color="var(--text-2)" /></button>
+                <button className="btn-icon" onClick={handleRepost}><Link2 size={16} color="var(--text-2)" /></button>
               </Tooltip.Trigger>
-              <Tooltip.Content sideOffset={6}>Репост</Tooltip.Content>
+              <Tooltip.Content sideOffset={6}>Скопировать ссылку</Tooltip.Content>
             </Tooltip.Root>
 
             <Tooltip.Root>

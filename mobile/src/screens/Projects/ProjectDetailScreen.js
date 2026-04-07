@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, Image, TouchableOpacity, TextInput,
   StyleSheet, ActivityIndicator, Dimensions, FlatList, Modal,
-  StatusBar,
+  StatusBar, Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { apiJson, api } from '../../services/api';
@@ -76,7 +76,9 @@ export default function ProjectDetailScreen({ navigation, route }) {
 
   const handleRepost = async () => {
     try {
-      await api(`/reposts/${id}`, { method: 'POST' });
+      await Share.share({
+        message: `${project?.title || 'Проект'} — смотри на Folio!\nhttps://folioplatform.ru/projects/${id}`,
+      });
     } catch {}
   };
 
@@ -156,10 +158,11 @@ export default function ProjectDetailScreen({ navigation, route }) {
   };
 
   return (
+    <>
     <ScrollView style={styles.container}>
       {/* Cover */}
-      <TouchableOpacity activeOpacity={0.9} onPress={() => openImage(project.cover)}>
-        <Image source={{ uri: project.cover }} style={styles.cover} resizeMode="cover" />
+      <TouchableOpacity activeOpacity={0.9} onPress={() => openImage(project.cover)} style={{ margin: 8 }}>
+        <Image source={{ uri: project.cover }} style={styles.cover} resizeMode="contain" />
       </TouchableOpacity>
 
       <View style={styles.body}>
@@ -185,7 +188,7 @@ export default function ProjectDetailScreen({ navigation, route }) {
             <Text style={[styles.statNum, isSaved && { color: '#f39c12' }]}>{saveCount}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.likeBtn} onPress={handleRepost}>
-            <Ionicons name="repeat" size={20} color="#666" />
+            <Ionicons name="share-outline" size={20} color="#666" />
           </TouchableOpacity>
           <View style={styles.stat}>
             <Ionicons name="eye" size={18} color="#999" />
@@ -208,15 +211,15 @@ export default function ProjectDetailScreen({ navigation, route }) {
                 case 'HEADING': return <Text key={idx} style={{ fontSize: 20, fontWeight: '700', color: '#1a1a2e', marginVertical: 8 }}>{block.content}</Text>;
                 case 'TEXT': return <Text key={idx} style={{ fontSize: 15, color: '#333', lineHeight: 22, marginBottom: 8 }}>{block.content}</Text>;
                 case 'IMAGE': return (
-                  <TouchableOpacity key={idx} activeOpacity={0.9} onPress={() => openImage(block.url)}>
-                    <Image source={{ uri: block.url }} style={{ width: width, marginLeft: -16, aspectRatio: 16/9 }} resizeMode="cover" />
+                  <TouchableOpacity key={idx} activeOpacity={0.9} onPress={() => openImage(block.url)} style={{ marginHorizontal: -8, marginVertical: 4 }}>
+                    <Image source={{ uri: block.url }} style={{ width: '100%', aspectRatio: 4/3 }} resizeMode="contain" />
                   </TouchableOpacity>
                 );
                 case 'IMAGE_GALLERY': return (
                   <View key={idx}>
                     {(block.urls || []).map((u, i) => (
-                      <TouchableOpacity key={i} activeOpacity={0.9} onPress={() => openImage(u)}>
-                        <Image source={{ uri: u }} style={{ width: width, marginLeft: -16, aspectRatio: 16/9 }} resizeMode="cover" />
+                      <TouchableOpacity key={i} activeOpacity={0.9} onPress={() => openImage(u)} style={{ marginHorizontal: -8, marginVertical: 4 }}>
+                        <Image source={{ uri: u }} style={{ width: '100%', aspectRatio: 4/3 }} resizeMode="contain" />
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -259,7 +262,7 @@ export default function ProjectDetailScreen({ navigation, route }) {
           <View style={styles.gallery}>
             {mediaImages.map((m) => (
               <TouchableOpacity key={m.id} activeOpacity={0.9} onPress={() => openImage(m.url)}>
-                <Image source={{ uri: m.url }} style={styles.mediaImage} resizeMode="cover" />
+                <Image source={{ uri: m.url }} style={styles.mediaImage} resizeMode="contain" />
               </TouchableOpacity>
             ))}
           </View>
@@ -322,25 +325,26 @@ export default function ProjectDetailScreen({ navigation, route }) {
       <View style={{ height: 40 }} />
     </ScrollView>
 
-      {/* Fullscreen Image Viewer */}
-      <Modal visible={viewerVisible} transparent animationType="fade" onRequestClose={() => setViewerVisible(false)}>
-        <View style={styles.viewerOverlay}>
-          <StatusBar hidden={viewerVisible} />
-          <TouchableOpacity style={styles.viewerClose} onPress={() => setViewerVisible(false)}>
-            <Ionicons name="close" size={28} color="#fff" />
-          </TouchableOpacity>
-          {viewerImage && (
-            <Image source={{ uri: viewerImage }} style={styles.viewerImage} resizeMode="contain" />
-          )}
-        </View>
-      </Modal>
+    {/* Fullscreen Image Viewer */}
+    <Modal visible={viewerVisible} transparent animationType="fade" onRequestClose={() => setViewerVisible(false)}>
+      <View style={styles.viewerOverlay}>
+        <StatusBar hidden={viewerVisible} />
+        <TouchableOpacity style={styles.viewerClose} onPress={() => setViewerVisible(false)}>
+          <Ionicons name="close" size={28} color="#fff" />
+        </TouchableOpacity>
+        {viewerImage && (
+          <Image source={{ uri: viewerImage }} style={styles.viewerImage} resizeMode="contain" />
+        )}
+      </View>
+    </Modal>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  cover: { width, aspectRatio: 4/3 },
+  cover: { width: '100%', aspectRatio: 4/3, borderRadius: 8 },
   body: { padding: 16 },
   title: { fontSize: 22, fontWeight: '800', color: '#1a1a2e', marginBottom: 8 },
   authorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
@@ -358,7 +362,7 @@ const styles = StyleSheet.create({
   categoryText: { fontSize: 12, color: '#2e7d32' },
   gallery: { marginBottom: 16 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1a1a2e', marginBottom: 12 },
-  mediaImage: { width: width, marginLeft: -16, aspectRatio: 4/3 },
+  mediaImage: { width: '100%', aspectRatio: 4/3, marginVertical: 4 },
   commentsSection: { marginTop: 8 },
   commentInput: {
     flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#eee',
