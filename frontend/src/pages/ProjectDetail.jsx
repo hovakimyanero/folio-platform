@@ -27,6 +27,7 @@ export default function ProjectDetail() {
   const [collectionsOpen, setCollectionsOpen] = useState(false);
   const [collections, setCollections] = useState([]);
   const [newCollName, setNewCollName] = useState('');
+  const [lightboxUrl, setLightboxUrl] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -151,6 +152,13 @@ export default function ProjectDetail() {
 
   const openCollections = async () => {
     if (!user) return showToast('Войдите, чтобы сохранять', 'error');
+    if (!saved) {
+      try {
+        await api.post(`/saves/${id}`);
+        setSaved(true);
+        setSaveCount(c => c + 1);
+      } catch {}
+    }
     try {
       const { data } = await api.get('/collections');
       setCollections(data.collections || []);
@@ -217,7 +225,7 @@ export default function ProjectDetail() {
         </Link>
 
         {/* Cover */}
-        <div style={{ overflow: 'hidden', marginBottom: 40, background: 'var(--card)' }}>
+        <div style={{ overflow: 'hidden', marginBottom: 40, background: 'var(--card)', cursor: 'zoom-in' }} onClick={() => setLightboxUrl(project.cover)}>
           <img src={project.cover} alt={project.title} style={{ width: '100%', display: 'block' }} />
         </div>
 
@@ -247,7 +255,7 @@ export default function ProjectDetail() {
 
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <button onClick={toggleSave} className="btn-icon" style={{ background: saved ? 'rgba(var(--accent-rgb), 0.1)' : undefined, borderColor: saved ? 'var(--accent)' : undefined }}>
+                <button onClick={openCollections} className="btn-icon" style={{ background: saved ? 'rgba(var(--accent-rgb), 0.1)' : undefined, borderColor: saved ? 'var(--accent)' : undefined }}>
                   {saved ? <BookmarkCheck size={16} color="var(--accent)" /> : <Bookmark size={16} color="var(--text-2)" />}
                 </button>
               </Tooltip.Trigger>
@@ -259,13 +267,6 @@ export default function ProjectDetail() {
                 <button className="btn-icon" onClick={handleRepost}><Repeat2 size={16} color="var(--text-2)" /></button>
               </Tooltip.Trigger>
               <Tooltip.Content sideOffset={6}>Репост</Tooltip.Content>
-            </Tooltip.Root>
-
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <button className="btn-icon" onClick={openCollections}><Plus size={16} color="var(--text-2)" /></button>
-              </Tooltip.Trigger>
-              <Tooltip.Content sideOffset={6}>В коллекцию</Tooltip.Content>
             </Tooltip.Root>
 
             <Tooltip.Root>
@@ -328,7 +329,7 @@ export default function ProjectDetail() {
                   return <div key={block.id} style={{ fontSize: 16, color: 'var(--text-2)', lineHeight: 1.8, whiteSpace: 'pre-wrap', marginBottom: 16 }}>{block.content}</div>;
                 case 'IMAGE':
                   return (
-                    <div key={block.id} style={{ overflow: 'hidden', lineHeight: 0 }}>
+                    <div key={block.id} style={{ overflow: 'hidden', lineHeight: 0, cursor: 'zoom-in' }} onClick={() => setLightboxUrl(block.mediaUrl)}>
                       <img src={block.mediaUrl} alt="" style={{ width: '100%', display: 'block' }} />
                     </div>
                   );
@@ -336,7 +337,7 @@ export default function ProjectDetail() {
                   return (
                     <div key={block.id} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 0 }}>
                       {(block.content || '').split(',').map((url, i) => (
-                        <div key={i} style={{ overflow: 'hidden', lineHeight: 0 }}>
+                        <div key={i} style={{ overflow: 'hidden', lineHeight: 0, cursor: 'zoom-in' }} onClick={() => setLightboxUrl(url.trim())}>
                           <img src={url.trim()} alt="" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
                         </div>
                       ))}
@@ -401,7 +402,7 @@ export default function ProjectDetail() {
         {project.media?.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 48 }}>
             {project.media.filter(m => m.url !== project.cover).map(m => (
-              <div key={m.id} style={{ overflow: 'hidden', lineHeight: 0 }}>
+              <div key={m.id} style={{ overflow: 'hidden', lineHeight: 0, cursor: m.type !== 'VIDEO' ? 'zoom-in' : undefined }} onClick={() => m.type !== 'VIDEO' && setLightboxUrl(m.url)}>
                 {m.type === 'VIDEO' ? (
                   <video src={m.url} controls style={{ width: '100%', display: 'block' }} />
                 ) : (
@@ -535,6 +536,20 @@ export default function ProjectDetail() {
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+
+    {/* Lightbox */}
+    {lightboxUrl && (
+      <div onClick={() => setLightboxUrl(null)} style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(8px)',
+        zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out',
+      }}>
+        <button onClick={() => setLightboxUrl(null)} style={{
+          position: 'absolute', top: 20, right: 20, background: 'none', border: 'none',
+          color: '#fff', cursor: 'pointer', zIndex: 10000, padding: 8,
+        }}><X size={24} /></button>
+        <img src={lightboxUrl} alt="" style={{ maxWidth: '95vw', maxHeight: '95vh', objectFit: 'contain' }} onClick={e => e.stopPropagation()} />
+      </div>
+    )}
 
     </Tooltip.Provider>
   );

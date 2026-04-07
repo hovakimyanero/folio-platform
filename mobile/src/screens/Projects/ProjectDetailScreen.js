@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, Image, TouchableOpacity, TextInput,
-  StyleSheet, ActivityIndicator, Dimensions, FlatList,
+  StyleSheet, ActivityIndicator, Dimensions, FlatList, Modal,
+  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { apiJson, api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
-const { width } = Dimensions.get('window');
+const { width, height: screenHeight } = Dimensions.get('window');
 
 export default function ProjectDetailScreen({ navigation, route }) {
   const { id } = route.params;
@@ -24,6 +25,8 @@ export default function ProjectDetailScreen({ navigation, route }) {
   const [sending, setSending] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [requiresPassword, setRequiresPassword] = useState(false);
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerImage, setViewerImage] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -147,10 +150,17 @@ export default function ProjectDetailScreen({ navigation, route }) {
   const mediaImages = (project.media || []).filter(m => m.url !== project.cover);
   const blocks = project.blocks || [];
 
+  const openImage = (uri) => {
+    setViewerImage(uri);
+    setViewerVisible(true);
+  };
+
   return (
     <ScrollView style={styles.container}>
       {/* Cover */}
-      <Image source={{ uri: project.cover }} style={styles.cover} resizeMode="contain" />
+      <TouchableOpacity activeOpacity={0.9} onPress={() => openImage(project.cover)}>
+        <Image source={{ uri: project.cover }} style={styles.cover} resizeMode="cover" />
+      </TouchableOpacity>
 
       <View style={styles.body}>
         {/* Title + Author */}
@@ -197,10 +207,18 @@ export default function ProjectDetailScreen({ navigation, route }) {
               switch (block.type) {
                 case 'HEADING': return <Text key={idx} style={{ fontSize: 20, fontWeight: '700', color: '#1a1a2e', marginVertical: 8 }}>{block.content}</Text>;
                 case 'TEXT': return <Text key={idx} style={{ fontSize: 15, color: '#333', lineHeight: 22, marginBottom: 8 }}>{block.content}</Text>;
-                case 'IMAGE': return <Image key={idx} source={{ uri: block.url }} style={{ width: '100%', aspectRatio: 16/9 }} resizeMode="contain" />;
+                case 'IMAGE': return (
+                  <TouchableOpacity key={idx} activeOpacity={0.9} onPress={() => openImage(block.url)}>
+                    <Image source={{ uri: block.url }} style={{ width: width, marginLeft: -16, aspectRatio: 16/9 }} resizeMode="cover" />
+                  </TouchableOpacity>
+                );
                 case 'IMAGE_GALLERY': return (
                   <View key={idx}>
-                    {(block.urls || []).map((u, i) => <Image key={i} source={{ uri: u }} style={{ width: '100%', aspectRatio: 16/9 }} resizeMode="contain" />)}
+                    {(block.urls || []).map((u, i) => (
+                      <TouchableOpacity key={i} activeOpacity={0.9} onPress={() => openImage(u)}>
+                        <Image source={{ uri: u }} style={{ width: width, marginLeft: -16, aspectRatio: 16/9 }} resizeMode="cover" />
+                      </TouchableOpacity>
+                    ))}
                   </View>
                 );
                 case 'QUOTE': return (
@@ -240,7 +258,9 @@ export default function ProjectDetailScreen({ navigation, route }) {
         {mediaImages.length > 0 && (
           <View style={styles.gallery}>
             {mediaImages.map((m) => (
-              <Image key={m.id} source={{ uri: m.url }} style={styles.mediaImage} resizeMode="contain" />
+              <TouchableOpacity key={m.id} activeOpacity={0.9} onPress={() => openImage(m.url)}>
+                <Image source={{ uri: m.url }} style={styles.mediaImage} resizeMode="cover" />
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -301,13 +321,26 @@ export default function ProjectDetailScreen({ navigation, route }) {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+
+      {/* Fullscreen Image Viewer */}
+      <Modal visible={viewerVisible} transparent animationType="fade" onRequestClose={() => setViewerVisible(false)}>
+        <View style={styles.viewerOverlay}>
+          <StatusBar hidden={viewerVisible} />
+          <TouchableOpacity style={styles.viewerClose} onPress={() => setViewerVisible(false)}>
+            <Ionicons name="close" size={28} color="#fff" />
+          </TouchableOpacity>
+          {viewerImage && (
+            <Image source={{ uri: viewerImage }} style={styles.viewerImage} resizeMode="contain" />
+          )}
+        </View>
+      </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  cover: { width, aspectRatio: 16/9, backgroundColor: '#f0f0f0' },
+  cover: { width, aspectRatio: 4/3 },
   body: { padding: 16 },
   title: { fontSize: 22, fontWeight: '800', color: '#1a1a2e', marginBottom: 8 },
   authorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
@@ -325,7 +358,7 @@ const styles = StyleSheet.create({
   categoryText: { fontSize: 12, color: '#2e7d32' },
   gallery: { marginBottom: 16 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1a1a2e', marginBottom: 12 },
-  mediaImage: { width: '100%', aspectRatio: 16/9, backgroundColor: '#f0f0f0' },
+  mediaImage: { width: width, marginLeft: -16, aspectRatio: 4/3 },
   commentsSection: { marginTop: 8 },
   commentInput: {
     flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#eee',
@@ -340,4 +373,7 @@ const styles = StyleSheet.create({
   similarCard: { width: 140, marginRight: 12 },
   similarCover: { width: 140, height: 100, borderRadius: 8, backgroundColor: '#f0f0f0', marginBottom: 4 },
   similarTitle: { fontSize: 12, color: '#1a1a2e' },
+  viewerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' },
+  viewerClose: { position: 'absolute', top: 50, right: 20, zIndex: 10, padding: 8 },
+  viewerImage: { width: width, height: screenHeight * 0.8 },
 });
