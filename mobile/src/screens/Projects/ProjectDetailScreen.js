@@ -326,14 +326,13 @@ export default function ProjectDetailScreen({ navigation, route }) {
     </ScrollView>
 
     {/* Fullscreen Image Viewer */}
-    <Modal visible={viewerVisible} transparent animationType="fade" onRequestClose={() => setViewerVisible(false)}>
-      <View style={styles.viewerOverlay}>
-        <StatusBar hidden={viewerVisible} />
-        <TouchableOpacity style={styles.viewerClose} onPress={() => setViewerVisible(false)}>
-          <Ionicons name="close" size={28} color="#fff" />
+    <Modal visible={viewerVisible} transparent={false} animationType="fade" onRequestClose={() => setViewerVisible(false)} statusBarTranslucent>
+      <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
+        <TouchableOpacity style={{ position: 'absolute', top: 50, right: 20, zIndex: 10, padding: 12 }} onPress={() => setViewerVisible(false)}>
+          <Ionicons name="close" size={30} color="#fff" />
         </TouchableOpacity>
         {viewerImage && (
-          <Image source={{ uri: viewerImage }} style={styles.viewerImage} resizeMode="contain" />
+          <Image source={{ uri: viewerImage }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
         )}
       </View>
     </Modal>
