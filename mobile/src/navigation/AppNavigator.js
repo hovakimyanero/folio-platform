@@ -25,6 +25,7 @@ import ChallengeDetailScreen from '../screens/Challenges/ChallengeDetailScreen';
 import ConversationsScreen from '../screens/Messages/ConversationsScreen';
 import ChatScreen from '../screens/Messages/ChatScreen';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
+import MarketplaceScreen from '../screens/Marketplace/MarketplaceScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -91,6 +92,7 @@ export default function AppNavigator() {
             <Stack.Screen name="ChallengeDetail" component={ChallengeDetailScreen} options={{ title: 'Челлендж' }} />
             <Stack.Screen name="Conversations" component={ConversationsScreen} options={{ title: 'Сообщения' }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ title: 'Чат' }} />
+            <Stack.Screen name="Marketplace" component={MarketplaceScreen} options={{ title: 'Маркетплейс' }} />
           </>
         )}
       </Stack.Navigator>

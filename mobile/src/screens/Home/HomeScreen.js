@@ -130,7 +130,6 @@ export default function HomeScreen({ navigation }) {
         </View>
       )}
 
-      {/* Quick links */}
       <View style={styles.links}>
         <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Feed')}>
           <Ionicons name="sparkles" size={28} color="#6C5CE7" />
@@ -146,6 +145,10 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
       <View style={styles.links}>
+        <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Marketplace')}>
+          <Ionicons name="bag" size={28} color="#6C5CE7" />
+          <Text style={styles.linkText}>Маркетплейс</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Analytics')}>
           <Ionicons name="bar-chart" size={28} color="#0984e3" />
           <Text style={styles.linkText}>Аналитика</Text>
@@ -153,10 +156,6 @@ export default function HomeScreen({ navigation }) {
         <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Conversations')}>
           <Ionicons name="chatbubbles" size={28} color="#00b894" />
           <Text style={styles.linkText}>Сообщения</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.linkCard} onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={28} color="#e17055" />
-          <Text style={styles.linkText}>Поиск</Text>
         </TouchableOpacity>
       </View>
 

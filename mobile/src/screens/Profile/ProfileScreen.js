@@ -140,6 +140,48 @@ export default function ProfileScreen({ route, navigation }) {
           </View>
         )}
 
+        {/* Skills */}
+        {profile.skills?.length > 0 && (
+          <View style={{ marginTop: 10, width: '100%', paddingHorizontal: 16 }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#1a1a2e', marginBottom: 6 }}>Навыки</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {profile.skills.map((s, i) => (
+                <View key={i} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, backgroundColor: '#f0edff' }}>
+                  <Text style={{ fontSize: 12, color: '#6C5CE7' }}>{s}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Specialization */}
+        {profile.specialization?.length > 0 && (
+          <View style={{ marginTop: 8, width: '100%', paddingHorizontal: 16 }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#1a1a2e', marginBottom: 6 }}>Специализация</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {profile.specialization.map((s, i) => (
+                <View key={i} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, backgroundColor: 'rgba(16,185,129,0.1)' }}>
+                  <Text style={{ fontSize: 12, color: '#10b981' }}>{s}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Languages */}
+        {profile.languages?.length > 0 && (
+          <View style={{ marginTop: 8, width: '100%', paddingHorizontal: 16 }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#1a1a2e', marginBottom: 6 }}>Языки</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {profile.languages.map((l, i) => (
+                <View key={i} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, backgroundColor: '#f0f0f0' }}>
+                  <Text style={{ fontSize: 12, color: '#555' }}>{l}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         <View style={styles.metaRow}>
           {profile.location ? (
             <View style={styles.metaItem}>
@@ -193,6 +235,49 @@ export default function ProfileScreen({ route, navigation }) {
             >
               <Ionicons name="chatbubble-outline" size={18} color="#6C5CE7" />
             </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Experience */}
+        {profile.experience?.length > 0 && (
+          <View style={{ width: '100%', paddingHorizontal: 0, marginTop: 16 }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#1a1a2e', marginBottom: 10 }}>Опыт работы</Text>
+            {profile.experience.map((exp, i) => (
+              <View key={i} style={{ flexDirection: 'row', marginBottom: 12, gap: 10 }}>
+                <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: '#f0edff', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="briefcase" size={18} color="#6C5CE7" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#1a1a2e' }}>{exp.role || exp.title}</Text>
+                  <Text style={{ fontSize: 13, color: '#666' }}>{exp.company}</Text>
+                  <Text style={{ fontSize: 11, color: '#999', marginTop: 2 }}>
+                    {exp.from}{exp.to ? ` — ${exp.to}` : exp.current ? ' — н.в.' : ''}
+                  </Text>
+                  {exp.description ? <Text style={{ fontSize: 12, color: '#777', marginTop: 4 }}>{exp.description}</Text> : null}
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Education */}
+        {profile.education?.length > 0 && (
+          <View style={{ width: '100%', paddingHorizontal: 0, marginTop: 12 }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#1a1a2e', marginBottom: 10 }}>Образование</Text>
+            {profile.education.map((edu, i) => (
+              <View key={i} style={{ flexDirection: 'row', marginBottom: 12, gap: 10 }}>
+                <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: 'rgba(16,185,129,0.1)', justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="school" size={18} color="#10b981" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#1a1a2e' }}>{edu.school}</Text>
+                  {edu.degree ? <Text style={{ fontSize: 13, color: '#666' }}>{edu.degree}</Text> : null}
+                  <Text style={{ fontSize: 11, color: '#999', marginTop: 2 }}>
+                    {edu.from}{edu.to ? ` — ${edu.to}` : ''}
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
         )}
 
