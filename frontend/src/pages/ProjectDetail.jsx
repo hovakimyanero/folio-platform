@@ -217,8 +217,8 @@ export default function ProjectDetail() {
         </Link>
 
         {/* Cover */}
-        <div style={{ borderRadius: 'var(--radius-xl)', overflow: 'hidden', marginBottom: 40, background: 'var(--card)' }}>
-          <img src={project.cover} alt={project.title} style={{ width: '100%', maxHeight: 560, objectFit: 'cover' }} />
+        <div style={{ overflow: 'hidden', marginBottom: 40, background: 'var(--card)' }}>
+          <img src={project.cover} alt={project.title} style={{ width: '100%', display: 'block' }} />
         </div>
 
         {/* Header */}
@@ -319,25 +319,25 @@ export default function ProjectDetail() {
 
         {/* Case study blocks */}
         {project.blocks?.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 48, maxWidth: 700 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 48, maxWidth: 700 }}>
             {project.blocks.map(block => {
               switch (block.type) {
                 case 'HEADING':
-                  return <h2 key={block.id} style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em' }}>{block.content}</h2>;
+                  return <h2 key={block.id} style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em', marginTop: 24, marginBottom: 12 }}>{block.content}</h2>;
                 case 'TEXT':
-                  return <div key={block.id} style={{ fontSize: 16, color: 'var(--text-2)', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{block.content}</div>;
+                  return <div key={block.id} style={{ fontSize: 16, color: 'var(--text-2)', lineHeight: 1.8, whiteSpace: 'pre-wrap', marginBottom: 16 }}>{block.content}</div>;
                 case 'IMAGE':
                   return (
-                    <div key={block.id} style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-                      <img src={block.mediaUrl} alt="" style={{ width: '100%' }} />
+                    <div key={block.id} style={{ overflow: 'hidden', lineHeight: 0 }}>
+                      <img src={block.mediaUrl} alt="" style={{ width: '100%', display: 'block' }} />
                     </div>
                   );
                 case 'IMAGE_GALLERY':
                   return (
-                    <div key={block.id} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+                    <div key={block.id} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 0 }}>
                       {(block.content || '').split(',').map((url, i) => (
-                        <div key={i} style={{ borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
-                          <img src={url.trim()} alt="" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
+                        <div key={i} style={{ overflow: 'hidden', lineHeight: 0 }}>
+                          <img src={url.trim()} alt="" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', display: 'block' }} />
                         </div>
                       ))}
                     </div>
@@ -359,7 +359,7 @@ export default function ProjectDetail() {
                     <blockquote key={block.id} style={{
                       padding: '20px 24px', borderLeft: '3px solid var(--accent)',
                       background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-sm)',
-                      fontSize: 18, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.7,
+                      fontSize: 18, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.7, marginTop: 16, marginBottom: 16,
                     }}>
                       {block.content}
                     </blockquote>
@@ -371,7 +371,7 @@ export default function ProjectDetail() {
                     <pre key={block.id} style={{
                       padding: 20, borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.3)',
                       fontSize: 13, fontFamily: 'monospace', overflow: 'auto', lineHeight: 1.6,
-                      border: '1px solid var(--glass-border)',
+                      border: '1px solid var(--glass-border)', marginTop: 16, marginBottom: 16,
                     }}>
                       <code>{block.content}</code>
                     </pre>
@@ -399,13 +399,13 @@ export default function ProjectDetail() {
 
         {/* Media gallery */}
         {project.media?.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 48 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 48 }}>
             {project.media.filter(m => m.url !== project.cover).map(m => (
-              <div key={m.id} style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+              <div key={m.id} style={{ overflow: 'hidden', lineHeight: 0 }}>
                 {m.type === 'VIDEO' ? (
-                  <video src={m.url} controls style={{ width: '100%' }} />
+                  <video src={m.url} controls style={{ width: '100%', display: 'block' }} />
                 ) : (
-                  <img src={m.url} alt="" style={{ width: '100%' }} />
+                  <img src={m.url} alt="" style={{ width: '100%', display: 'block' }} />
                 )}
               </div>
             ))}

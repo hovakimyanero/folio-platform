@@ -150,7 +150,7 @@ export default function ProjectDetailScreen({ navigation, route }) {
   return (
     <ScrollView style={styles.container}>
       {/* Cover */}
-      <Image source={{ uri: project.cover }} style={styles.cover} resizeMode="cover" />
+      <Image source={{ uri: project.cover }} style={styles.cover} resizeMode="contain" />
 
       <View style={styles.body}>
         {/* Title + Author */}
@@ -197,11 +197,11 @@ export default function ProjectDetailScreen({ navigation, route }) {
               switch (block.type) {
                 case 'HEADING': return <Text key={idx} style={{ fontSize: 20, fontWeight: '700', color: '#1a1a2e', marginVertical: 8 }}>{block.content}</Text>;
                 case 'TEXT': return <Text key={idx} style={{ fontSize: 15, color: '#333', lineHeight: 22, marginBottom: 8 }}>{block.content}</Text>;
-                case 'IMAGE': return <Image key={idx} source={{ uri: block.url }} style={{ width: '100%', height: 220, borderRadius: 12, marginBottom: 8 }} resizeMode="cover" />;
+                case 'IMAGE': return <Image key={idx} source={{ uri: block.url }} style={{ width: '100%', aspectRatio: 16/9 }} resizeMode="contain" />;
                 case 'IMAGE_GALLERY': return (
-                  <ScrollView key={idx} horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
-                    {(block.urls || []).map((u, i) => <Image key={i} source={{ uri: u }} style={{ width: 200, height: 150, borderRadius: 8, marginRight: 8 }} resizeMode="cover" />)}
-                  </ScrollView>
+                  <View key={idx}>
+                    {(block.urls || []).map((u, i) => <Image key={i} source={{ uri: u }} style={{ width: '100%', aspectRatio: 16/9 }} resizeMode="contain" />)}
+                  </View>
                 );
                 case 'QUOTE': return (
                   <View key={idx} style={{ borderLeftWidth: 3, borderLeftColor: '#6C5CE7', paddingLeft: 12, marginVertical: 8 }}>
@@ -239,9 +239,8 @@ export default function ProjectDetailScreen({ navigation, route }) {
         {/* Media gallery */}
         {mediaImages.length > 0 && (
           <View style={styles.gallery}>
-            <Text style={styles.sectionTitle}>Медиа</Text>
             {mediaImages.map((m) => (
-              <Image key={m.id} source={{ uri: m.url }} style={styles.mediaImage} resizeMode="cover" />
+              <Image key={m.id} source={{ uri: m.url }} style={styles.mediaImage} resizeMode="contain" />
             ))}
           </View>
         )}
@@ -308,7 +307,7 @@ export default function ProjectDetailScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  cover: { width, height: width * 0.6, backgroundColor: '#f0f0f0' },
+  cover: { width, aspectRatio: 16/9, backgroundColor: '#f0f0f0' },
   body: { padding: 16 },
   title: { fontSize: 22, fontWeight: '800', color: '#1a1a2e', marginBottom: 8 },
   authorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
@@ -326,7 +325,7 @@ const styles = StyleSheet.create({
   categoryText: { fontSize: 12, color: '#2e7d32' },
   gallery: { marginBottom: 16 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1a1a2e', marginBottom: 12 },
-  mediaImage: { width: '100%', height: 250, borderRadius: 12, marginBottom: 8, backgroundColor: '#f0f0f0' },
+  mediaImage: { width: '100%', aspectRatio: 16/9, backgroundColor: '#f0f0f0' },
   commentsSection: { marginTop: 8 },
   commentInput: {
     flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#eee',

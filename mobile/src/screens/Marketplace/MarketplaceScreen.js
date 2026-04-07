@@ -142,7 +142,7 @@ export default function MarketplaceScreen({ navigation }) {
     <View>
       {/* Search */}
       <View style={styles.searchRow}>
-        <Ionicons name="search" size={18} color="#999" style={{ position: 'absolute', left: 14, zIndex: 1 }} />
+        <Ionicons name="search" size={18} color="#999" style={{ position: 'absolute', left: 24, top: 22, zIndex: 1 }} />
         <TextInput
           style={styles.searchInput}
           placeholder="Поиск ресурсов..."

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, Image,
   StyleSheet, ActivityIndicator, RefreshControl, Dimensions,
-  SafeAreaView,
+  SafeAreaView, Platform, StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { apiJson, api } from '../../services/api';
@@ -155,7 +155,7 @@ export default function FeedScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f9fa' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  tabsWrapper: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  tabsWrapper: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   tabsRow: { paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
   tab: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
