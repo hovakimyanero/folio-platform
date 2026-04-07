@@ -81,18 +81,18 @@ export default function AppNavigator() {
             <Stack.Screen name="Main" component={HomeTabs} options={{ headerShown: false }} />
             <Stack.Screen name="ProjectDetail" component={ProjectDetailScreen} options={{ title: 'Проект' }} />
             <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Профиль' }} />
-            <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Настройки' }} />
+            <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Search" component={SearchScreen} options={{ title: 'Поиск' }} />
             <Stack.Screen name="Feed" component={FeedScreen} options={{ title: 'Лента' }} />
             <Stack.Screen name="Analytics" component={AnalyticsScreen} options={{ title: 'Аналитика' }} />
             <Stack.Screen name="Projects" component={ProjectsScreen} options={{ title: 'Проекты' }} />
-            <Stack.Screen name="Collections" component={CollectionsScreen} options={{ title: 'Коллекции' }} />
+            <Stack.Screen name="Collections" component={CollectionsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="CollectionDetail" component={CollectionDetailScreen} options={{ title: 'Коллекция' }} />
-            <Stack.Screen name="Challenges" component={ChallengesScreen} options={{ title: 'Челленджи' }} />
+            <Stack.Screen name="Challenges" component={ChallengesScreen} options={{ headerShown: false }} />
             <Stack.Screen name="ChallengeDetail" component={ChallengeDetailScreen} options={{ title: 'Челлендж' }} />
-            <Stack.Screen name="Conversations" component={ConversationsScreen} options={{ title: 'Сообщения' }} />
+            <Stack.Screen name="Conversations" component={ConversationsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ title: 'Чат' }} />
-            <Stack.Screen name="Marketplace" component={MarketplaceScreen} options={{ title: 'Маркетплейс' }} />
+            <Stack.Screen name="Marketplace" component={MarketplaceScreen} options={{ headerShown: false }} />
           </>
         )}
       </Stack.Navigator>

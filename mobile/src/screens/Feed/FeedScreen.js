@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, Image,
   StyleSheet, ActivityIndicator, RefreshControl, Dimensions,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { apiJson, api } from '../../services/api';
@@ -82,7 +83,7 @@ export default function FeedScreen({ navigation }) {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Tabs */}
       <View style={styles.tabsWrapper}>
         <FlatList
@@ -147,7 +148,7 @@ export default function FeedScreen({ navigation }) {
           ListFooterComponent={loading ? <ActivityIndicator style={{ padding: 16 }} color="#6C5CE7" /> : null}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 

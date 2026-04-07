@@ -35,6 +35,7 @@ import CookiesPage from './pages/CookiesPage';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import Marketplace from './pages/Marketplace';
+import MarketplaceCreate from './pages/MarketplaceCreate';
 import Analytics from './pages/Analytics';
 import CookieBanner from './components/CookieBanner';
 
@@ -89,6 +90,7 @@ export default function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/marketplace/create" element={<ProtectedRoute><MarketplaceCreate /></ProtectedRoute>} />
           <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/terms" element={<Terms />} />

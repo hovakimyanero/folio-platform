@@ -15,17 +15,22 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#6C5CE7"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
       },
       "package": "com.folio.app"
     },
     "extra": {
-      "apiBaseUrl": "https://folio-platform-folio.up.railway.app/api"
+      "apiBaseUrl": "https://folio-platform-folio.up.railway.app/api",
+      "eas": {
+        "projectId": "f657ea01-a88a-4ad3-b723-3a6e167ade14"
+      }
     },
     "plugins": [
       "expo-asset",
       "expo-font",
       "expo-secure-store"
-    ]
+    ],
+    "owner": "hovakimian_design"
   }
 }
