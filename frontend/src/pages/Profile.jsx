@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import * as Tabs from '@radix-ui/react-tabs';
-import * as Avatar from '@radix-ui/react-avatar';
+import { Tabs, TabsList, TabsTrigger, TabsContent, Avatar, Button } from '../components/ui';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -60,12 +59,7 @@ export default function Profile() {
 
       <div style={{ maxWidth: 1000, margin: '-60px auto 0', padding: '0 24px 80px' }}>
         <div className="profile-header" style={{ display: 'flex', gap: 24, alignItems: 'flex-end', marginBottom: 40 }}>
-          <Avatar.Root className="profile-avatar" style={{ width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '4px solid var(--bg)', flexShrink: 0 }}>
-            <Avatar.Image src={profile.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <Avatar.Fallback style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--card)', fontSize: 36, fontFamily: 'var(--font-display)' }}>
-              {(profile.displayName || profile.username)[0]}
-            </Avatar.Fallback>
-          </Avatar.Root>
+          <Avatar src={profile.avatar} fallback={(profile.displayName || profile.username)[0]} size={120} style={{ border: '4px solid var(--bg)', flexShrink: 0 }} />
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="profile-name-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
@@ -100,11 +94,11 @@ export default function Profile() {
                 )}
               </div>
               {!isOwn && me && (
-                <button className={`btn ${following ? 'btn-secondary' : 'btn-primary'}`} onClick={toggleFollow} style={{ flexShrink: 0 }}>
+                <Button variant={following ? 'secondary' : 'primary'} onClick={toggleFollow} style={{ flexShrink: 0 }}>
                   {following ? <><UserCheck size={14} /> Подписка</> : <><UserPlus size={14} /> Подписаться</>}
-                </button>
+                </Button>
               )}
-              {isOwn && <Link to="/settings" className="btn btn-secondary" style={{ flexShrink: 0 }}>Редактировать</Link>}
+              {isOwn && <Link to="/settings" className="rdx-btn rdx-btn-secondary" style={{ flexShrink: 0 }}>Редактировать</Link>}
             </div>
           </div>
         </div>
@@ -167,19 +161,19 @@ export default function Profile() {
         )}
 
         {/* Tabs */}
-        <Tabs.Root value={tab} onValueChange={setTab}>
-          <Tabs.List style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', marginBottom: 40, width: 'fit-content' }}>
-            <Tabs.Trigger value="projects" style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === 'projects' ? 'var(--text)' : 'var(--text-3)', background: tab === 'projects' ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer' }}>Проекты</Tabs.Trigger>
-            <Tabs.Trigger value="liked" style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === 'liked' ? 'var(--text)' : 'var(--text-3)', background: tab === 'liked' ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer' }}>Понравившиеся</Tabs.Trigger>
-            <Tabs.Trigger value="about" style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === 'about' ? 'var(--text)' : 'var(--text-3)', background: tab === 'about' ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer' }}>О себе</Tabs.Trigger>
-          </Tabs.List>
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', marginBottom: 40, width: 'fit-content' }}>
+            <TabsTrigger value="projects" style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === 'projects' ? 'var(--text)' : 'var(--text-3)', background: tab === 'projects' ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer' }}>Проекты</TabsTrigger>
+            <TabsTrigger value="liked" style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === 'liked' ? 'var(--text)' : 'var(--text-3)', background: tab === 'liked' ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer' }}>Понравившиеся</TabsTrigger>
+            <TabsTrigger value="about" style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === 'about' ? 'var(--text)' : 'var(--text-3)', background: tab === 'about' ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer' }}>О себе</TabsTrigger>
+          </TabsList>
 
-          <Tabs.Content value="projects">
+          <TabsContent value="projects">
             {projects.length === 0 ? (
               <div className="empty-state">
                 <h3 className="empty-state-title">Нет проектов</h3>
                 <p className="empty-state-text">{isOwn ? 'Загрузите свой первый проект!' : 'Этот автор ещё не опубликовал проекты.'}</p>
-                {isOwn && <Link to="/upload" className="btn btn-primary">Загрузить проект</Link>}
+                {isOwn && <Link to="/upload" className="rdx-btn rdx-btn-primary">Загрузить проект</Link>}
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
@@ -197,9 +191,9 @@ export default function Profile() {
                 ))}
               </div>
             )}
-          </Tabs.Content>
-          <Tabs.Content value="liked"><div className="empty-state"><p className="empty-state-text">Понравившиеся проекты появятся здесь.</p></div></Tabs.Content>
-          <Tabs.Content value="about">
+          </TabsContent>
+          <TabsContent value="liked"><div className="empty-state"><p className="empty-state-text">Понравившиеся проекты появятся здесь.</p></div></TabsContent>
+          <TabsContent value="about">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
               {profile.bio && <div style={{ fontSize: 15, color: 'var(--text-2)', lineHeight: 1.8 }}>{profile.bio}</div>}
 
@@ -242,7 +236,7 @@ export default function Profile() {
 
               {/* Custom CTA */}
               {profile.customCTA?.label && profile.customCTA?.url && (
-                <a href={profile.customCTA.url} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
+                <a href={profile.customCTA.url} target="_blank" rel="noreferrer" className="rdx-btn rdx-btn-primary" style={{ alignSelf: 'flex-start' }}>
                   {profile.customCTA.label}
                 </a>
               )}
@@ -251,8 +245,8 @@ export default function Profile() {
                 <div style={{ fontSize: 15, color: 'var(--text-3)' }}>Информация не указана.</div>
               )}
             </div>
-          </Tabs.Content>
-        </Tabs.Root>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

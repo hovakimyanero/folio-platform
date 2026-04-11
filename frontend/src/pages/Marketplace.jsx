@@ -59,7 +59,7 @@ export default function Marketplace() {
             </p>
           </div>
           {user && (
-            <Link to="/marketplace/create" className="btn btn-primary">
+            <Link to="/marketplace/create" className="rdx-btn rdx-btn-primary">
               <Plus size={14} /> Добавить товар
             </Link>
           )}
@@ -70,17 +70,17 @@ export default function Marketplace() {
           <div style={{ position: 'relative', flex: '1 1 300px', maxWidth: 400 }}>
             <Search size={16} color="var(--text-3)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
             <input
-              className="input"
+              className="rdx-input"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Поиск ресурсов..."
               style={{ paddingLeft: 40 }}
             />
           </div>
-          <select className="input" value={type} onChange={e => setType(e.target.value)} style={{ appearance: 'none', width: 'auto', minWidth: 140 }}>
+          <select className="rdx-input" value={type} onChange={e => setType(e.target.value)} style={{ appearance: 'none', width: 'auto', minWidth: 140 }}>
             {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
-          <select className="input" value={sort} onChange={e => setSort(e.target.value)} style={{ appearance: 'none', width: 'auto', minWidth: 140 }}>
+          <select className="rdx-input" value={sort} onChange={e => setSort(e.target.value)} style={{ appearance: 'none', width: 'auto', minWidth: 140 }}>
             <option value="newest">Новые</option>
             <option value="popular">Популярные</option>
             <option value="price-asc">Цена ↑</option>

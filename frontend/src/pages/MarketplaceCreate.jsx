@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useToast } from '../context/ToastContext';
+import { Input, Textarea, Label, Button } from '../components/ui';
 import { ArrowLeft, Upload, Plus, X, Image, Package } from 'lucide-react';
 
 const TYPES = [
@@ -117,14 +118,7 @@ export default function MarketplaceCreate() {
     }
   };
 
-  const inputStyle = {
-    width: '100%', padding: '12px 16px', borderRadius: 'var(--radius-sm)',
-    background: 'var(--glass)', border: '1px solid var(--glass-border)',
-    color: 'var(--text)', fontSize: 14, outline: 'none',
-    transition: 'border-color 0.2s',
-  };
-
-  const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-2)' };
+  // Using Label/Input/Textarea components from UI library
 
   return (
     <div style={{ paddingTop: 100, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
@@ -150,9 +144,8 @@ export default function MarketplaceCreate() {
         <form onSubmit={handleSubmit}>
           {/* Title */}
           <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Название *</label>
-            <input
-              style={inputStyle}
+            <Label>Название *</Label>
+            <Input
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="Например: Modern UI Kit для Figma"
@@ -162,9 +155,9 @@ export default function MarketplaceCreate() {
 
           {/* Description */}
           <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Описание *</label>
-            <textarea
-              style={{ ...inputStyle, minHeight: 120, resize: 'vertical' }}
+            <Label>Описание *</Label>
+            <Textarea
+              style={{ minHeight: 120, resize: 'vertical' }}
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Подробное описание вашего ресурса..."
@@ -175,22 +168,22 @@ export default function MarketplaceCreate() {
           {/* Type & Price */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
             <div>
-              <label style={labelStyle}>Тип *</label>
+              <Label>Тип *</Label>
               <select
-                style={{ ...inputStyle, appearance: 'none' }}
+                className="rdx-input"
                 value={type}
                 onChange={e => setType(e.target.value)}
+                style={{ appearance: 'none' }}
               >
                 {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Цена (USD)</label>
-              <input
+              <Label>Цена (USD)</Label>
+              <Input
                 type="number"
                 min="0"
                 step="0.01"
-                style={inputStyle}
                 value={price}
                 onChange={e => setPrice(e.target.value)}
                 placeholder="0 = бесплатно"
@@ -203,7 +196,7 @@ export default function MarketplaceCreate() {
 
           {/* Cover */}
           <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Обложка *</label>
+            <Label>Обложка *</Label>
             {coverPreview ? (
               <div style={{ position: 'relative', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: 8 }}>
                 <img src={coverPreview} alt="cover" style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover' }} />
@@ -236,7 +229,7 @@ export default function MarketplaceCreate() {
 
           {/* Preview images */}
           <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Превью изображения</label>
+            <Label>Превью изображения</Label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
               {previewUrls.map((url, i) => (
                 <div key={i} style={{ position: 'relative', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
@@ -267,7 +260,7 @@ export default function MarketplaceCreate() {
 
           {/* Product files */}
           <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Файлы товара</label>
+            <Label>Файлы товара</Label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {productFiles.map((f, i) => (
                 <div key={i} style={{
@@ -304,7 +297,7 @@ export default function MarketplaceCreate() {
 
           {/* Tags */}
           <div style={{ marginBottom: 32 }}>
-            <label style={labelStyle}>Теги (до 10)</label>
+            <Label>Теги (до 10)</Label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
               {tags.map((t, i) => (
                 <span key={i} style={{
@@ -324,43 +317,41 @@ export default function MarketplaceCreate() {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                style={{ ...inputStyle, flex: 1 }}
+              <Input
+                style={{ flex: 1 }}
                 value={tagInput}
                 onChange={e => setTagInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
                 placeholder="Введите тег и нажмите Enter"
                 maxLength={30}
               />
-              <button
+              <Button
                 type="button"
                 onClick={addTag}
-                className="btn"
-                style={{ padding: '10px 20px' }}
+                variant="secondary"
               >
                 Добавить
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* Submit */}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-            <button
+            <Button
               type="button"
               onClick={() => navigate('/marketplace')}
-              className="btn"
-              style={{ padding: '12px 28px' }}
+              variant="secondary"
             >
               Отмена
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="btn btn-primary"
+              variant="primary"
               disabled={submitting}
-              style={{ padding: '12px 32px', opacity: submitting ? 0.6 : 1 }}
+              style={{ opacity: submitting ? 0.6 : 1 }}
             >
               {submitting ? 'Публикация...' : 'Опубликовать'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

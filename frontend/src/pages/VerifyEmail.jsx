@@ -40,7 +40,7 @@ export default function VerifyEmail() {
             <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, marginBottom: 12 }}>Email подтверждён</h2>
             <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 24 }}>Ваш email успешно подтверждён.</p>
-            <Link to="/" className="btn btn-primary">На главную</Link>
+            <Link to="/" className="rdx-btn rdx-btn-primary">На главную</Link>
           </>
         )}
         {status === 'error' && (
@@ -48,7 +48,7 @@ export default function VerifyEmail() {
             <div style={{ fontSize: 48, marginBottom: 16 }}>✕</div>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, marginBottom: 12 }}>Ошибка подтверждения</h2>
             <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 24 }}>Ссылка недействительна или истекла.</p>
-            <Link to="/" className="btn btn-primary">На главную</Link>
+            <Link to="/" className="rdx-btn rdx-btn-primary">На главную</Link>
           </>
         )}
       </div>

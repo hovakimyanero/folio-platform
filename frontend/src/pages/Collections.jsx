@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Dialog, Input, Label, Button, IconButton } from '../components/ui';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -25,7 +26,7 @@ export default function Collections() {
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 48 }}>
           <h1 className="page-title" style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em' }}>Коллекции</h1>
-          {user && <button className="btn btn-primary" onClick={() => setCreateOpen(true)}><Plus size={14} /> Создать</button>}
+          {user && <Button variant="primary" onClick={() => setCreateOpen(true)}><Plus size={14} /> Создать</Button>}
         </div>
         {collections.length === 0 ? (
           <div className="empty-state"><FolderOpen size={64} color="var(--text-3)" style={{ opacity: 0.2, margin: '0 auto 24px' }} /><h3 className="empty-state-title">Нет коллекций</h3><p className="empty-state-text">Создайте первую коллекцию и добавляйте проекты.</p></div>
@@ -43,15 +44,15 @@ export default function Collections() {
           </div>
         )}
 
-        <Dialog.Root open={createOpen} onOpenChange={setCreateOpen}>
-          <Dialog.Portal><Dialog.Overlay /><Dialog.Content style={{ width: 'min(400px, 90vw)', padding: 40 }}>
-            <Dialog.Close asChild><button className="btn-icon" style={{ position: 'absolute', top: 14, right: 14 }}><X size={14} /></button></Dialog.Close>
-            <Dialog.Title style={{ fontFamily: 'var(--font-display)', fontSize: 24, marginBottom: 24 }}>Новая коллекция</Dialog.Title>
-            <label className="input-label">Название</label>
-            <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="Моя коллекция" style={{ marginBottom: 24 }} />
-            <button className="btn btn-primary" onClick={createCollection} style={{ width: '100%' }}>Создать</button>
-          </Dialog.Content></Dialog.Portal>
-        </Dialog.Root>
+        <DialogPrimitive.Root open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogPrimitive.Portal><DialogPrimitive.Overlay className="rdx-dialog-overlay" /><DialogPrimitive.Content className="rdx-dialog-content" style={{ maxWidth: 400 }}>
+            <DialogPrimitive.Close asChild><IconButton style={{ position: 'absolute', top: 14, right: 14 }}><X size={14} /></IconButton></DialogPrimitive.Close>
+            <DialogPrimitive.Title className="rdx-dialog-title">Новая коллекция</DialogPrimitive.Title>
+            <Label>Название</Label>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Моя коллекция" style={{ marginBottom: 24 }} />
+            <Button variant="primary" onClick={createCollection} style={{ width: '100%' }}>Создать</Button>
+          </DialogPrimitive.Content></DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ export default function CategoryPage() {
       <div className="container">
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em', marginBottom: 48, textTransform: 'capitalize' }}>{slug.replace(/-/g, ' ')}</h1>
         {projects.length === 0 ? (
-          <div className="empty-state"><h3 className="empty-state-title">Пока пусто</h3><p className="empty-state-text">В этой категории ещё нет проектов. Вы можете стать первым!</p><Link to="/upload" className="btn btn-primary">Загрузить проект</Link></div>
+          <div className="empty-state"><h3 className="empty-state-title">Пока пусто</h3><p className="empty-state-text">В этой категории ещё нет проектов. Вы можете стать первым!</p><Link to="/upload" className="rdx-btn rdx-btn-primary">Загрузить проект</Link></div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
             {projects.map(p => (

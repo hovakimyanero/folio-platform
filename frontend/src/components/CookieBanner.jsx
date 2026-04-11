@@ -28,7 +28,7 @@ export default function CookieBanner() {
         Мы используем cookies для обеспечения работы сайта.{' '}
         <Link to="/cookies" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>Подробнее</Link>
       </p>
-      <button className="btn btn-primary btn-sm" onClick={accept}>Принять</button>
+      <button className="rdx-btn rdx-btn-primary rdx-btn-sm" onClick={accept}>Принять</button>
     </div>
   );
 }

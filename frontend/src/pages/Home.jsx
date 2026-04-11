@@ -59,13 +59,13 @@ export default function Home() {
 
         <div className="cta-buttons" style={{ display: 'flex', gap: 16 }}>
           {user ? (
-            <Link to="/upload" className="btn btn-primary btn-lg">Загрузить проект</Link>
+            <Link to="/upload" className="rdx-btn rdx-btn-primary rdx-btn-lg">Загрузить проект</Link>
           ) : (
-            <button className="btn btn-primary btn-lg" onClick={() => openAuthDialog('register')}>
+            <button className="rdx-btn rdx-btn-primary rdx-btn-lg" onClick={() => openAuthDialog('register')}>
               Начать бесплатно
             </button>
           )}
-          <Link to="/projects" className="btn btn-secondary btn-lg">Смотреть работы</Link>
+          <Link to="/projects" className="rdx-btn rdx-btn-secondary rdx-btn-lg">Смотреть работы</Link>
         </div>
 
         <div className="hero-stats" style={{ display: 'flex', gap: 72, marginTop: 100 }}>
@@ -108,7 +108,7 @@ export default function Home() {
                 <TrendingUp size={20} color="var(--accent)" />
                 <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em' }}>В тренде</h2>
               </div>
-              <Link to="/feed" className="btn btn-ghost btn-sm">Смотреть все →</Link>
+              <Link to="/feed" className="rdx-btn rdx-btn-ghost rdx-btn-sm">Смотреть все →</Link>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
               {trending.map(p => (
@@ -146,7 +146,7 @@ export default function Home() {
                 <Award size={20} color="var(--accent)" />
                 <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em' }}>Выбор недели</h2>
               </div>
-              <Link to="/feed" className="btn btn-ghost btn-sm">Все подборки →</Link>
+              <Link to="/feed" className="rdx-btn rdx-btn-ghost rdx-btn-sm">Все подборки →</Link>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
               {picks.map(pk => (
@@ -190,7 +190,7 @@ export default function Home() {
           <p style={{ fontSize: 17, color: 'var(--text-2)', maxWidth: 440, margin: '28px auto 52px', lineHeight: 1.8, fontWeight: 300 }}>
             Присоединяйтесь к {formatNum(stats.users)}+ креативных профессионалов.
           </p>
-          <button className="btn btn-primary btn-lg" onClick={() => openAuthDialog('register')}>Создать портфолио</button>
+          <button className="rdx-btn rdx-btn-primary rdx-btn-lg" onClick={() => openAuthDialog('register')}>Создать портфолио</button>
         </section>
       )}
     </div>

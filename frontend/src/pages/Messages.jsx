@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import { getSocket, connectSocket } from '../utils/socket';
 import { useAuth } from '../context/AuthContext';
+import { Input, Button } from '../components/ui';
 import { Send, Paperclip } from 'lucide-react';
 
 export default function Messages() {
@@ -81,8 +82,8 @@ export default function Messages() {
                 <div ref={bottomRef} />
               </div>
               <div style={{ padding: '16px 24px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: 12 }}>
-                <input className="input" value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Написать сообщение..." style={{ flex: 1 }} />
-                <button className="btn btn-primary btn-sm" onClick={send}><Send size={14} /></button>
+                <Input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Написать сообщение..." style={{ flex: 1 }} />
+                <Button variant="primary" size="sm" onClick={send}><Send size={14} /></Button>
               </div>
             </>
           )}

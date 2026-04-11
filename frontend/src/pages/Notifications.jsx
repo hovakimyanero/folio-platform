@@ -25,7 +25,7 @@ export default function Notifications() {
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px 80px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em' }}>Уведомления {unread > 0 && <span style={{ fontSize: 18, color: 'var(--accent)' }}>({unread})</span>}</h1>
-          {unread > 0 && <button className="btn btn-ghost" onClick={markAllRead}>Прочитать все</button>}
+          {unread > 0 && <button className="rdx-btn rdx-btn-ghost" onClick={markAllRead}>Прочитать все</button>}
         </div>
         {notifs.length === 0 ? (
           <div className="empty-state"><Bell size={64} color="var(--text-3)" style={{ opacity: 0.2, margin: '0 auto 24px' }} /><h3 className="empty-state-title">Нет уведомлений</h3><p className="empty-state-text">Когда кто-то взаимодействует с вашими проектами, уведомления появятся здесь.</p></div>

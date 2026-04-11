@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
-import * as Tabs from '@radix-ui/react-tabs';
-import * as Switch from '@radix-ui/react-switch';
+import { Tabs, TabsList, TabsTrigger, TabsContent, Input, Textarea, Label, Button, IconButton, Switch, Checkbox, AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogAction, AlertDialogCancel, Separator } from '../components/ui';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -96,36 +95,23 @@ export default function Settings() {
     setNotifPrefs(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const switchStyle = (checked) => ({
-    width: 42, height: 24, borderRadius: 100, position: 'relative', cursor: 'pointer',
-    background: checked ? 'var(--accent)' : 'var(--card)',
-    border: `1px solid ${checked ? 'var(--accent)' : 'var(--glass-border)'}`,
-    transition: 'background 0.2s',
-  });
-
-  const thumbStyle = (checked) => ({
-    display: 'block', width: 18, height: 18, borderRadius: '50%',
-    background: 'white', transition: 'transform 0.2s',
-    transform: checked ? 'translateX(20px)' : 'translateX(2px)',
-  });
-
   return (
     <div style={{ paddingTop: 120, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px 80px' }}>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em', marginBottom: 40 }}>Настройки</h1>
 
-        <Tabs.Root value={tab} onValueChange={setTab}>
-          <Tabs.List style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', marginBottom: 40, width: 'fit-content' }}>
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList style={{ marginBottom: 40, width: 'fit-content' }}>
             {[['profile', 'Профиль'], ['password', 'Пароль'], ['notifications', 'Уведомления'], ['privacy', 'Приватность']].map(([val, label]) => (
-              <Tabs.Trigger key={val} value={val} style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === val ? 'var(--text)' : 'var(--text-3)', background: tab === val ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer' }}>{label}</Tabs.Trigger>
+              <TabsTrigger key={val} value={val}>{label}</TabsTrigger>
             ))}
-          </Tabs.List>
+          </TabsList>
 
-          <Tabs.Content value="profile">
+          <TabsContent value="profile">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               {/* Cover upload */}
               <div>
-                <label className="input-label">Обложка профиля</label>
+                <Label>Обложка профиля</Label>
                 <div
                   onClick={() => coverRef.current?.click()}
                   style={{
@@ -146,7 +132,7 @@ export default function Settings() {
 
               {/* Avatar upload */}
               <div>
-                <label className="input-label">Аватар</label>
+                <Label>Аватар</Label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <div
                     onClick={() => avatarRef.current?.click()}
@@ -170,94 +156,91 @@ export default function Settings() {
                 <input ref={avatarRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
               </div>
 
-              <div><label className="input-label">Имя</label><input className="input" value={displayName} onChange={e => setDisplayName(e.target.value)} /></div>
-              <div><label className="input-label">Заголовок / Headline</label><input className="input" value={headline} onChange={e => setHeadline(e.target.value)} placeholder="Senior UI Designer at Company" /></div>
-              <div><label className="input-label">О себе</label><textarea className="input" rows={4} value={bio} onChange={e => setBio(e.target.value)} style={{ resize: 'vertical' }} /></div>
-              <div><label className="input-label">Сайт</label><input className="input" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://" /></div>
-              <div><label className="input-label">Местоположение</label><input className="input" value={location} onChange={e => setLocation(e.target.value)} /></div>
-              <div><label className="input-label">Навыки (через запятую)</label><input className="input" value={skills} onChange={e => setSkills(e.target.value)} placeholder="UI/UX, Branding, 3D" /></div>
-              <div><label className="input-label">Специализация (через запятую)</label><input className="input" value={specialization} onChange={e => setSpecialization(e.target.value)} placeholder="Веб-дизайн, Графический дизайн" /></div>
-              <div><label className="input-label">Языки (через запятую)</label><input className="input" value={languages} onChange={e => setLanguages(e.target.value)} placeholder="Русский, English" /></div>
-              <div><label className="input-label">Дата рождения</label><input className="input" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} /></div>
+              <div><Label>Имя</Label><Input value={displayName} onChange={e => setDisplayName(e.target.value)} /></div>
+              <div><Label>Заголовок / Headline</Label><Input value={headline} onChange={e => setHeadline(e.target.value)} placeholder="Senior UI Designer at Company" /></div>
+              <div><Label>О себе</Label><Textarea rows={4} value={bio} onChange={e => setBio(e.target.value)} /></div>
+              <div><Label>Сайт</Label><Input value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://" /></div>
+              <div><Label>Местоположение</Label><Input value={location} onChange={e => setLocation(e.target.value)} /></div>
+              <div><Label>Навыки (через запятую)</Label><Input value={skills} onChange={e => setSkills(e.target.value)} placeholder="UI/UX, Branding, 3D" /></div>
+              <div><Label>Специализация (через запятую)</Label><Input value={specialization} onChange={e => setSpecialization(e.target.value)} placeholder="Веб-дизайн, Графический дизайн" /></div>
+              <div><Label>Языки (через запятую)</Label><Input value={languages} onChange={e => setLanguages(e.target.value)} placeholder="Русский, English" /></div>
+              <div><Label>Дата рождения</Label><Input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} /></div>
 
               {/* Open to work / hire */}
               <div style={{ display: 'flex', gap: 16 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
-                  <input type="checkbox" checked={openToWork} onChange={e => setOpenToWork(e.target.checked)} style={{ width: 18, height: 18, accentColor: 'var(--accent)' }} />
+                  <Checkbox checked={openToWork} onCheckedChange={setOpenToWork} />
                   <Briefcase size={14} /> Ищу работу
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
-                  <input type="checkbox" checked={openToHire} onChange={e => setOpenToHire(e.target.checked)} style={{ width: 18, height: 18, accentColor: 'var(--accent)' }} />
+                  <Checkbox checked={openToHire} onCheckedChange={setOpenToHire} />
                   <Briefcase size={14} /> Нанимаю
                 </label>
               </div>
 
               {/* Experience */}
               <div>
-                <label className="input-label">Опыт работы</label>
+                <Label>Опыт работы</Label>
                 {experience.map((exp, i) => (
                   <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 12, alignItems: 'start' }}>
-                    <input className="input" placeholder="Должность" value={exp.title || ''} onChange={e => { const arr = [...experience]; arr[i] = { ...arr[i], title: e.target.value }; setExperience(arr); }} />
-                    <input className="input" placeholder="Компания" value={exp.company || ''} onChange={e => { const arr = [...experience]; arr[i] = { ...arr[i], company: e.target.value }; setExperience(arr); }} />
-                    <button onClick={() => setExperience(prev => prev.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff6b6b', padding: '10px 4px' }}><X size={14} /></button>
-                    <input className="input" placeholder="Период (2020–2023)" value={exp.period || ''} onChange={e => { const arr = [...experience]; arr[i] = { ...arr[i], period: e.target.value }; setExperience(arr); }} style={{ gridColumn: '1/3' }} />
+                    <Input placeholder="Должность" value={exp.title || ''} onChange={e => { const arr = [...experience]; arr[i] = { ...arr[i], title: e.target.value }; setExperience(arr); }} />
+                    <Input placeholder="Компания" value={exp.company || ''} onChange={e => { const arr = [...experience]; arr[i] = { ...arr[i], company: e.target.value }; setExperience(arr); }} />
+                    <IconButton onClick={() => setExperience(prev => prev.filter((_, idx) => idx !== i))} style={{ color: '#ff6b6b' }}><X size={14} /></IconButton>
+                    <Input placeholder="Период (2020–2023)" value={exp.period || ''} onChange={e => { const arr = [...experience]; arr[i] = { ...arr[i], period: e.target.value }; setExperience(arr); }} style={{ gridColumn: '1/3' }} />
                   </div>
                 ))}
-                <button onClick={() => setExperience(prev => [...prev, { title: '', company: '', period: '' }])} className="btn btn-ghost btn-sm"><Plus size={12} /> Добавить</button>
+                <Button variant="ghost" size="sm" onClick={() => setExperience(prev => [...prev, { title: '', company: '', period: '' }])}><Plus size={12} /> Добавить</Button>
               </div>
 
               {/* Education */}
               <div>
-                <label className="input-label">Образование</label>
+                <Label>Образование</Label>
                 {education.map((edu, i) => (
                   <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 12, alignItems: 'start' }}>
-                    <input className="input" placeholder="Учебное заведение" value={edu.institution || ''} onChange={e => { const arr = [...education]; arr[i] = { ...arr[i], institution: e.target.value }; setEducation(arr); }} />
-                    <input className="input" placeholder="Степень / Программа" value={edu.degree || ''} onChange={e => { const arr = [...education]; arr[i] = { ...arr[i], degree: e.target.value }; setEducation(arr); }} />
-                    <button onClick={() => setEducation(prev => prev.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff6b6b', padding: '10px 4px' }}><X size={14} /></button>
-                    <input className="input" placeholder="Период" value={edu.period || ''} onChange={e => { const arr = [...education]; arr[i] = { ...arr[i], period: e.target.value }; setEducation(arr); }} style={{ gridColumn: '1/3' }} />
+                    <Input placeholder="Учебное заведение" value={edu.institution || ''} onChange={e => { const arr = [...education]; arr[i] = { ...arr[i], institution: e.target.value }; setEducation(arr); }} />
+                    <Input placeholder="Степень / Программа" value={edu.degree || ''} onChange={e => { const arr = [...education]; arr[i] = { ...arr[i], degree: e.target.value }; setEducation(arr); }} />
+                    <IconButton onClick={() => setEducation(prev => prev.filter((_, idx) => idx !== i))} style={{ color: '#ff6b6b' }}><X size={14} /></IconButton>
+                    <Input placeholder="Период" value={edu.period || ''} onChange={e => { const arr = [...education]; arr[i] = { ...arr[i], period: e.target.value }; setEducation(arr); }} style={{ gridColumn: '1/3' }} />
                   </div>
                 ))}
-                <button onClick={() => setEducation(prev => [...prev, { institution: '', degree: '', period: '' }])} className="btn btn-ghost btn-sm"><Plus size={12} /> Добавить</button>
+                <Button variant="ghost" size="sm" onClick={() => setEducation(prev => [...prev, { institution: '', degree: '', period: '' }])}><Plus size={12} /> Добавить</Button>
               </div>
 
               {/* Custom CTA */}
               <div>
-                <label className="input-label">Кнопка действия (CTA)</label>
+                <Label>Кнопка действия (CTA)</Label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <input className="input" placeholder="Текст кнопки" value={ctaLabel} onChange={e => setCtaLabel(e.target.value)} />
-                  <input className="input" placeholder="URL" value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} />
+                  <Input placeholder="Текст кнопки" value={ctaLabel} onChange={e => setCtaLabel(e.target.value)} />
+                  <Input placeholder="URL" value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} />
                 </div>
               </div>
 
-              <button className="btn btn-primary" onClick={handleSave} disabled={saving} style={{ alignSelf: 'flex-start', opacity: saving ? 0.6 : 1 }}><Save size={14} /> {saving ? 'Сохранение...' : 'Сохранить'}</button>
+              <Button variant="primary" onClick={handleSave} disabled={saving} style={{ alignSelf: 'flex-start' }}><Save size={14} /> {saving ? 'Сохранение...' : 'Сохранить'}</Button>
             </div>
-          </Tabs.Content>
-          <Tabs.Content value="password"><div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}><div><label className="input-label">Текущий пароль</label><input className="input" type="password" /></div><div><label className="input-label">Новый пароль</label><input className="input" type="password" /></div><div><label className="input-label">Подтвердите пароль</label><input className="input" type="password" /></div><button className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>Обновить пароль</button></div></Tabs.Content>
-          <Tabs.Content value="notifications">
+          </TabsContent>
+          <TabsContent value="password"><div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}><div><Label>Текущий пароль</Label><Input type="password" /></div><div><Label>Новый пароль</Label><Input type="password" /></div><div><Label>Подтвердите пароль</Label><Input type="password" /></div><Button variant="primary" style={{ alignSelf: 'flex-start' }}>Обновить пароль</Button></div></TabsContent>
+          <TabsContent value="notifications">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {[['likes', 'Лайки'], ['comments', 'Комментарии'], ['follows', 'Подписки'], ['messages', 'Сообщения']].map(([key, label]) => (
                 <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--glass-border)' }}>
                   <span style={{ fontSize: 14 }}>{label}</span>
-                  <Switch.Root
+                  <Switch
                     checked={notifPrefs[key]}
                     onCheckedChange={() => togglePref(key)}
-                    style={switchStyle(notifPrefs[key])}
-                  >
-                    <Switch.Thumb style={thumbStyle(notifPrefs[key])} />
-                  </Switch.Root>
+                  />
                 </div>
               ))}
-              <button className="btn btn-primary" onClick={saveNotifPrefs} disabled={savingNotifs} style={{ alignSelf: 'flex-start', marginTop: 8, opacity: savingNotifs ? 0.6 : 1 }}>
+              <Button variant="primary" onClick={saveNotifPrefs} disabled={savingNotifs} style={{ alignSelf: 'flex-start', marginTop: 8 }}>
                 <Save size={14} /> {savingNotifs ? 'Сохранение...' : 'Сохранить настройки'}
-              </button>
+              </Button>
             </div>
-          </Tabs.Content>
-          <Tabs.Content value="privacy">
+          </TabsContent>
+          <TabsContent value="privacy">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
               <div>
                 <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Экспорт данных</h3>
                 <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 16 }}>Скачайте копию всех ваших данных (профиль, проекты, комментарии).</p>
-                <button className="btn btn-secondary" onClick={async () => {
+                <Button variant="secondary" onClick={async () => {
                   try {
                     const { data } = await api.get('/users/me/export');
                     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -267,24 +250,32 @@ export default function Settings() {
                     URL.revokeObjectURL(url);
                     showToast('Данные экспортированы', 'success');
                   } catch { showToast('Ошибка экспорта', 'error'); }
-                }}>Скачать мои данные</button>
+                }}>Скачать мои данные</Button>
               </div>
               <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: 32 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, color: '#ff6b6b' }}>Удаление аккаунта</h3>
                 <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 16 }}>Это действие необратимо. Все ваши данные, проекты и комментарии будут удалены.</p>
-                <button className="btn btn-ghost" style={{ color: '#ff6b6b', borderColor: '#ff6b6b' }} onClick={async () => {
-                  if (!confirm('Вы уверены? Все данные будут удалены безвозвратно.')) return;
-                  if (!confirm('Это последнее предупреждение. Удалить аккаунт навсегда?')) return;
-                  try {
-                    await api.delete('/users/me');
-                    showToast('Аккаунт удалён', 'success');
-                    window.location.href = '/';
-                  } catch { showToast('Ошибка удаления', 'error'); }
-                }}>Удалить мой аккаунт</button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="danger" size="sm">Удалить мой аккаунт</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent title="Удалить аккаунт?" description="Это действие необратимо. Все ваши данные, проекты и комментарии будут удалены навсегда.">
+                    <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 24 }}>
+                      <AlertDialogCancel>Отмена</AlertDialogCancel>
+                      <AlertDialogAction className="rdx-btn rdx-btn-danger rdx-btn-sm" onClick={async () => {
+                        try {
+                          await api.delete('/users/me');
+                          showToast('Аккаунт удалён', 'success');
+                          window.location.href = '/';
+                        } catch { showToast('Ошибка удаления', 'error'); }
+                      }}>Удалить навсегда</AlertDialogAction>
+                    </div>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
-          </Tabs.Content>
-        </Tabs.Root>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

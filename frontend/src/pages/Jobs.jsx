@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { Input, Textarea, Label, Button } from '../components/ui';
 import { Plus, MapPin, Briefcase, DollarSign, Calendar, ExternalLink, Trash2 } from 'lucide-react';
 
 const JOB_TYPES = { FULL_TIME: 'Полная занятость', PART_TIME: 'Частичная', FREELANCE: 'Фриланс', REMOTE: 'Удалённо' };
@@ -49,28 +50,28 @@ export default function Jobs() {
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 24px 80px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 48 }}>
           <h1 className="page-title" style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em', margin: 0 }}>Вакансии</h1>
-          {user && <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}><Plus size={14} /> Разместить вакансию</button>}
+          {user && <Button variant="primary" onClick={() => setShowForm(!showForm)}><Plus size={14} /> Разместить вакансию</Button>}
         </div>
 
         {showForm && (
           <div style={{ background: 'var(--card)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)', padding: 32, marginBottom: 40 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-              <div><label className="input-label">Должность *</label><input className="input" value={form.title} onChange={e => setField('title', e.target.value)} /></div>
-              <div><label className="input-label">Компания *</label><input className="input" value={form.company} onChange={e => setField('company', e.target.value)} /></div>
-              <div><label className="input-label">Локация</label><input className="input" value={form.location} onChange={e => setField('location', e.target.value)} placeholder="Москва / Удалённо" /></div>
+              <div><Label>Должность *</Label><Input value={form.title} onChange={e => setField('title', e.target.value)} /></div>
+              <div><Label>Компания *</Label><Input value={form.company} onChange={e => setField('company', e.target.value)} /></div>
+              <div><Label>Локация</Label><Input value={form.location} onChange={e => setField('location', e.target.value)} placeholder="Москва / Удалённо" /></div>
               <div>
-                <label className="input-label">Тип занятости</label>
-                <select className="input" value={form.type} onChange={e => setField('type', e.target.value)} style={{ cursor: 'pointer' }}>
+                <Label>Тип занятости</Label>
+                <select className="rdx-input" value={form.type} onChange={e => setField('type', e.target.value)} style={{ cursor: 'pointer' }}>
                   {Object.entries(JOB_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
-              <div><label className="input-label">Зарплата</label><input className="input" value={form.salary} onChange={e => setField('salary', e.target.value)} placeholder="от 100 000 ₽" /></div>
-              <div><label className="input-label">Email для откликов</label><input className="input" type="email" value={form.contactEmail} onChange={e => setField('contactEmail', e.target.value)} /></div>
+              <div><Label>Зарплата</Label><Input value={form.salary} onChange={e => setField('salary', e.target.value)} placeholder="от 100 000 ₽" /></div>
+              <div><Label>Email для откликов</Label><Input type="email" value={form.contactEmail} onChange={e => setField('contactEmail', e.target.value)} /></div>
             </div>
-            <div style={{ marginBottom: 16 }}><label className="input-label">Описание вакансии *</label><textarea className="input" value={form.description} onChange={e => setField('description', e.target.value)} rows={6} style={{ resize: 'vertical' }} /></div>
+            <div style={{ marginBottom: 16 }}><Label>Описание вакансии *</Label><Textarea value={form.description} onChange={e => setField('description', e.target.value)} rows={6} style={{ resize: 'vertical' }} /></div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button className="btn btn-primary" onClick={handlePublish} disabled={publishing}>{publishing ? 'Публикация...' : 'Опубликовать'}</button>
-              <button className="btn btn-secondary" onClick={() => setShowForm(false)}>Отмена</button>
+              <Button variant="primary" onClick={handlePublish} disabled={publishing}>{publishing ? 'Публикация...' : 'Опубликовать'}</Button>
+              <Button variant="secondary" onClick={() => setShowForm(false)}>Отмена</Button>
             </div>
           </div>
         )}
@@ -102,8 +103,8 @@ export default function Jobs() {
                 </div>
                 <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 16 }}>{job.description.length > 300 ? job.description.substring(0, 300) + '...' : job.description}</p>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  {job.contactEmail && <a href={`mailto:${job.contactEmail}`} className="btn btn-primary btn-sm"><Briefcase size={13} /> Откликнуться</a>}
-                  {job.contactUrl && <a href={job.contactUrl} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm"><ExternalLink size={13} /> Подробнее</a>}
+                  {job.contactEmail && <a href={`mailto:${job.contactEmail}`} className="rdx-btn rdx-btn-primary rdx-btn-sm"><Briefcase size={13} /> Откликнуться</a>}
+                  {job.contactUrl && <a href={job.contactUrl} target="_blank" rel="noreferrer" className="rdx-btn rdx-btn-secondary rdx-btn-sm"><ExternalLink size={13} /> Подробнее</a>}
                   {user?.id === job.authorId && <button onClick={() => handleDelete(job.id)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}><Trash2 size={13} /> Удалить</button>}
                 </div>
               </div>

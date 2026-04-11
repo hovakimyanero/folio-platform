@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import * as Dialog from '@radix-ui/react-dialog';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import * as Avatar from '@radix-ui/react-avatar';
+import { Avatar, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, IconButton, Button } from './ui';
 import { Search, Bell, Plus, Settings, LogOut, User, ChevronDown, Menu, X, BarChart3 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAuthDialog } from '../context/AuthDialogContext';
@@ -77,60 +75,53 @@ export default function Header() {
         </nav>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button className="btn-icon" onClick={() => setSearchOpen(true)}>
+          <IconButton onClick={() => setSearchOpen(true)}>
             <Search size={16} color="var(--text-2)" />
-          </button>
+          </IconButton>
 
           {user ? (
             <>
-              <button className="btn-icon" onClick={() => navigate('/notifications')} style={{ position: 'relative' }}>
+              <IconButton onClick={() => navigate('/notifications')} style={{ position: 'relative' }}>
                 <Bell size={16} color="var(--text-2)" />
-              </button>
+              </IconButton>
 
-              <button className="btn btn-primary btn-sm" onClick={() => navigate('/upload')} style={{ width: 36, height: 36, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
+              <Button variant="primary" size="sm" onClick={() => navigate('/upload')} style={{ width: 36, height: 36, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
                 <Plus size={16} />
-              </button>
+              </Button>
 
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <button className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Avatar.Root style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
-                      <Avatar.Image src={user.avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <Avatar.Fallback style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--card)', color: 'var(--text-2)', fontSize: 13 }}>
-                        {user.displayName?.[0] || user.username[0]}
-                      </Avatar.Fallback>
-                    </Avatar.Root>
+                    <Avatar src={user.avatar} fallback={user.displayName?.[0] || user.username[0]} size={32} />
                     <ChevronDown size={12} color="var(--text-3)" />
                   </button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Portal>
-                  <DropdownMenu.Content sideOffset={8} align="end">
-                    <DropdownMenu.Item onClick={() => navigate(`/profile/${user.username}`)}>
-                      <User size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Профиль
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item onClick={() => navigate('/analytics')}>
-                      <BarChart3 size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Аналитика
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item onClick={() => navigate('/settings')}>
-                      <Settings size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Настройки
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Separator style={{ height: 1, background: 'var(--border)', margin: '6px 0' }} />
-                    <DropdownMenu.Item onClick={handleLogout} style={{ color: '#ff6b6b' }}>
-                      <LogOut size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Выйти
-                    </DropdownMenu.Item>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-              </DropdownMenu.Root>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate(`/profile/${user.username}`)}>
+                    <User size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Профиль
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/analytics')}>
+                    <BarChart3 size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Аналитика
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    <Settings size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Настройки
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} style={{ color: '#ff6b6b' }}>
+                    <LogOut size={14} style={{ marginRight: 8, opacity: 0.5 }} /> Выйти
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <>
-              <button className="btn-ghost" onClick={() => openAuthDialog('login')}>Войти</button>
-              <button className="btn btn-primary btn-sm desktop-only" onClick={() => openAuthDialog('register')}>Регистрация</button>
+              <Button variant="ghost" onClick={() => openAuthDialog('login')}>Войти</Button>
+              <Button variant="primary" size="sm" className="desktop-only" onClick={() => openAuthDialog('register')}>Регистрация</Button>
             </>
           )}
-          <button className="btn-icon mobile-only" onClick={() => setMobileMenu(!mobileMenu)}>
+          <IconButton className="mobile-only" onClick={() => setMobileMenu(!mobileMenu)}>
             {mobileMenu ? <X size={18} /> : <Menu size={18} />}
-          </button>
+          </IconButton>
         </div>
       </header>
 

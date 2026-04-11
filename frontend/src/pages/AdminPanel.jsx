@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import * as Tabs from '@radix-ui/react-tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent, Input, Textarea, Label, Button } from '../components/ui';
 import api from '../utils/api';
 import { useToast } from '../context/ToastContext';
 import { Shield, Users, Flag, BarChart3, Ban, Star, Trophy, Plus, Trash2, Edit3, Award, Bookmark } from 'lucide-react';
@@ -66,14 +66,14 @@ export default function AdminPanel() {
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em' }}>Админ-панель</h1>
         </div>
 
-        <Tabs.Root value={tab} onValueChange={setTab}>
-          <Tabs.List style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', marginBottom: 40, width: 'fit-content' }}>
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', marginBottom: 40, width: 'fit-content' }}>
             {[['analytics', 'Аналитика', BarChart3], ['reports', 'Жалобы', Flag], ['users', 'Пользователи', Users], ['challenges', 'Челленджи', Trophy], ['picks', 'Выбор недели', Award], ['badges', 'Бейджи', Star]].map(([val, label, Icon]) => (
-              <Tabs.Trigger key={val} value={val} style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === val ? 'var(--text)' : 'var(--text-3)', background: tab === val ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><Icon size={14} /> {label}</Tabs.Trigger>
+              <TabsTrigger key={val} value={val} style={{ padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500, color: tab === val ? 'var(--text)' : 'var(--text-3)', background: tab === val ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}><Icon size={14} /> {label}</TabsTrigger>
             ))}
-          </Tabs.List>
+          </TabsList>
 
-          <Tabs.Content value="analytics">
+          <TabsContent value="analytics">
             {analytics && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
                 {[['Пользователи', analytics.users], ['Проекты', analytics.projects], ['Просмотры', analytics.views], ['Лайки', analytics.likes], ['Новые за неделю', analytics.newUsersWeek], ['Проекты за неделю', analytics.newProjectsWeek]].map(([label, val]) => (
@@ -84,22 +84,22 @@ export default function AdminPanel() {
                 ))}
               </div>
             )}
-          </Tabs.Content>
+          </TabsContent>
 
-          <Tabs.Content value="reports">
+          <TabsContent value="reports">
             {reports.length === 0 ? <div className="empty-state"><h3 className="empty-state-title">Нет жалоб</h3></div> : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {reports.map(r => (
                   <div key={r.id} style={{ padding: 20, borderRadius: 'var(--radius-sm)', background: 'var(--card)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div><div style={{ fontWeight: 500, fontSize: 14, marginBottom: 4 }}>{r.reason}</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>от @{r.reporter?.username} · {new Date(r.createdAt).toLocaleDateString('ru')}</div></div>
-                    <div style={{ display: 'flex', gap: 8 }}><button className="btn btn-ghost btn-sm" onClick={() => api.patch(`/admin/reports/${r.id}`, { status: 'DISMISSED' })}>Отклонить</button><button className="btn btn-primary btn-sm" onClick={() => api.patch(`/admin/reports/${r.id}`, { status: 'RESOLVED' })}>Решить</button></div>
+                    <div style={{ display: 'flex', gap: 8 }}><Button variant="ghost" size="sm" onClick={() => api.patch(`/admin/reports/${r.id}`, { status: 'DISMISSED' })}>Отклонить</Button><Button variant="primary" size="sm" onClick={() => api.patch(`/admin/reports/${r.id}`, { status: 'RESOLVED' })}>Решить</Button></div>
                   </div>
                 ))}
               </div>
             )}
-          </Tabs.Content>
+          </TabsContent>
 
-          <Tabs.Content value="users">
+          <TabsContent value="users">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {users.map(u => (
                 <div key={u.id} style={{ padding: '14px 20px', borderRadius: 'var(--radius-sm)', background: 'var(--card)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -107,23 +107,23 @@ export default function AdminPanel() {
                     <img src={u.avatar} style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--glass-border)' }} alt="" />
                     <div><div style={{ fontWeight: 500, fontSize: 14 }}>{u.displayName || u.username} {u.isBanned && <span style={{ color: '#ff6b6b', fontSize: 11 }}>(забанен)</span>}</div><div style={{ fontSize: 12, color: 'var(--text-3)' }}>@{u.username} · {u._count?.projects} проектов</div></div>
                   </div>
-                  {!u.isBanned && <button className="btn btn-ghost btn-sm" onClick={() => banUser(u.id)} style={{ color: '#ff6b6b' }}><Ban size={12} /> Забанить</button>}
+                  {!u.isBanned && <Button variant="ghost" size="sm" onClick={() => banUser(u.id)} style={{ color: '#ff6b6b' }}><Ban size={12} /> Забанить</Button>}
                 </div>
               ))}
             </div>
-          </Tabs.Content>
+          </TabsContent>
 
-          <Tabs.Content value="challenges">
+          <TabsContent value="challenges">
             {/* Create new challenge */}
             <form onSubmit={createChallenge} style={{ padding: 24, borderRadius: 'var(--radius-md)', background: 'var(--card)', border: '1px solid var(--glass-border)', marginBottom: 24 }}>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> Новый челлендж</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-                <div><label className="input-label">Название</label><input className="input" value={newChallenge.title} onChange={e => setNewChallenge(p => ({ ...p, title: e.target.value }))} placeholder="Название челленджа" /></div>
-                <div><label className="input-label">Дедлайн</label><input className="input" type="datetime-local" value={newChallenge.deadline} onChange={e => setNewChallenge(p => ({ ...p, deadline: e.target.value }))} /></div>
+                <div><Label>Название</Label><Input value={newChallenge.title} onChange={e => setNewChallenge(p => ({ ...p, title: e.target.value }))} placeholder="Название челленджа" /></div>
+                <div><Label>Дедлайн</Label><Input type="datetime-local" value={newChallenge.deadline} onChange={e => setNewChallenge(p => ({ ...p, deadline: e.target.value }))} /></div>
               </div>
-              <div style={{ marginBottom: 12 }}><label className="input-label">Описание</label><textarea className="input" rows={3} value={newChallenge.description} onChange={e => setNewChallenge(p => ({ ...p, description: e.target.value }))} placeholder="Описание челленджа" style={{ resize: 'vertical' }} /></div>
-              <div style={{ marginBottom: 16 }}><label className="input-label">Правила</label><textarea className="input" rows={2} value={newChallenge.rules} onChange={e => setNewChallenge(p => ({ ...p, rules: e.target.value }))} placeholder="Правила (необязательно)" style={{ resize: 'vertical' }} /></div>
-              <button className="btn btn-primary" type="submit">Создать</button>
+              <div style={{ marginBottom: 12 }}><Label>Описание</Label><Textarea rows={3} value={newChallenge.description} onChange={e => setNewChallenge(p => ({ ...p, description: e.target.value }))} placeholder="Описание челленджа" style={{ resize: 'vertical' }} /></div>
+              <div style={{ marginBottom: 16 }}><Label>Правила</Label><Textarea rows={2} value={newChallenge.rules} onChange={e => setNewChallenge(p => ({ ...p, rules: e.target.value }))} placeholder="Правила (необязательно)" style={{ resize: 'vertical' }} /></div>
+              <Button variant="primary" type="submit">Создать</Button>
             </form>
 
             {/* Challenge list */}
@@ -138,24 +138,24 @@ export default function AdminPanel() {
                     <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{c._count?.entries || 0} участников · дедлайн {new Date(c.deadline).toLocaleDateString('ru')}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn btn-ghost btn-sm" onClick={() => toggleChallenge(c.id, c.isActive)}>{c.isActive ? 'Завершить' : 'Активировать'}</button>
-                    <button className="btn btn-ghost btn-sm" onClick={() => deleteChallenge(c.id)} style={{ color: '#ff6b6b' }}><Trash2 size={12} /></button>
+                    <Button variant="ghost" size="sm" onClick={() => toggleChallenge(c.id, c.isActive)}>{c.isActive ? 'Завершить' : 'Активировать'}</Button>
+                    <Button variant="ghost" size="sm" onClick={() => deleteChallenge(c.id)} style={{ color: '#ff6b6b' }}><Trash2 size={12} /></Button>
                   </div>
                 </div>
               ))}
               {challenges.length === 0 && <div className="empty-state"><h3 className="empty-state-title">Нет челленджей</h3></div>}
             </div>
-          </Tabs.Content>
+          </TabsContent>
 
           {/* Weekly Picks Tab */}
-          <Tabs.Content value="picks">
+          <TabsContent value="picks">
             <div style={{ padding: 24, borderRadius: 'var(--radius-md)', background: 'var(--card)', border: '1px solid var(--glass-border)', marginBottom: 24 }}>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Award size={16} /> Добавить в выбор недели</h3>
               <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-                <input className="input" value={newPickId} onChange={e => setNewPickId(e.target.value)} placeholder="ID проекта" style={{ flex: 1 }} />
-                <input className="input" value={newPickNote} onChange={e => setNewPickNote(e.target.value)} placeholder="Заметка куратора" style={{ flex: 2 }} />
+                <Input value={newPickId} onChange={e => setNewPickId(e.target.value)} placeholder="ID проекта" style={{ flex: 1 }} />
+                <Input value={newPickNote} onChange={e => setNewPickNote(e.target.value)} placeholder="Заметка куратора" style={{ flex: 2 }} />
               </div>
-              <button className="btn btn-primary" onClick={async () => {
+              <Button variant="primary" onClick={async () => {
                 if (!newPickId) return;
                 try {
                   const { data } = await api.post('/admin/weekly-picks', { projectId: newPickId, curatorNote: newPickNote });
@@ -163,7 +163,7 @@ export default function AdminPanel() {
                   setNewPickId(''); setNewPickNote('');
                   showToast('Добавлено в выбор недели', 'success');
                 } catch { showToast('Ошибка', 'error'); }
-              }}>Добавить</button>
+              }}>Добавить</Button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {picks.map(pk => (
@@ -175,25 +175,25 @@ export default function AdminPanel() {
                       <div style={{ fontSize: 12, color: 'var(--text-3)' }}>от {pk.project?.author?.displayName} {pk.curatorNote && `· "${pk.curatorNote}"`}</div>
                     </div>
                   </div>
-                  <button className="btn btn-ghost btn-sm" onClick={async () => {
+                  <Button variant="ghost" size="sm" onClick={async () => {
                     try { await api.delete(`/admin/weekly-picks/${pk.id}`); setPicks(prev => prev.filter(p => p.id !== pk.id)); showToast('Удалено', 'success'); } catch {}
-                  }} style={{ color: '#ff6b6b' }}><Trash2 size={12} /></button>
+                  }} style={{ color: '#ff6b6b' }}><Trash2 size={12} /></Button>
                 </div>
               ))}
               {picks.length === 0 && <div className="empty-state"><h3 className="empty-state-title">Нет выбранных проектов</h3></div>}
             </div>
-          </Tabs.Content>
+          </TabsContent>
 
           {/* Badges Tab */}
-          <Tabs.Content value="badges">
+          <TabsContent value="badges">
             <div style={{ padding: 24, borderRadius: 'var(--radius-md)', background: 'var(--card)', border: '1px solid var(--glass-border)', marginBottom: 24 }}>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}><Star size={16} /> Создать бейдж</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
-                <input className="input" value={newBadge.name} onChange={e => setNewBadge(p => ({ ...p, name: e.target.value }))} placeholder="Название" />
-                <input className="input" value={newBadge.description} onChange={e => setNewBadge(p => ({ ...p, description: e.target.value }))} placeholder="Описание" />
-                <input className="input" value={newBadge.icon} onChange={e => setNewBadge(p => ({ ...p, icon: e.target.value }))} placeholder="Иконка (emoji)" />
+                <Input value={newBadge.name} onChange={e => setNewBadge(p => ({ ...p, name: e.target.value }))} placeholder="Название" />
+                <Input value={newBadge.description} onChange={e => setNewBadge(p => ({ ...p, description: e.target.value }))} placeholder="Описание" />
+                <Input value={newBadge.icon} onChange={e => setNewBadge(p => ({ ...p, icon: e.target.value }))} placeholder="Иконка (emoji)" />
               </div>
-              <button className="btn btn-primary" onClick={async () => {
+              <Button variant="primary" onClick={async () => {
                 if (!newBadge.name) return;
                 try {
                   const { data } = await api.post('/admin/badges', newBadge);
@@ -201,7 +201,7 @@ export default function AdminPanel() {
                   setNewBadge({ name: '', description: '', icon: '' });
                   showToast('Бейдж создан', 'success');
                 } catch { showToast('Ошибка', 'error'); }
-              }}>Создать</button>
+              }}>Создать</Button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
               {badges.map(b => (
@@ -214,8 +214,8 @@ export default function AdminPanel() {
               ))}
             </div>
             {badges.length === 0 && <div className="empty-state"><h3 className="empty-state-title">Нет бейджей</h3></div>}
-          </Tabs.Content>
-        </Tabs.Root>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

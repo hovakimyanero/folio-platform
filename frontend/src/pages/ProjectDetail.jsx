@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import * as Tooltip from '@radix-ui/react-tooltip';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Tooltip, Dialog, DialogContent, Input, Button, IconButton, Separator } from '../components/ui';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -199,8 +200,8 @@ export default function ProjectDetail() {
           <Lock size={48} color="var(--text-3)" style={{ marginBottom: 24 }} />
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 32, marginBottom: 12 }}>Защищённый проект</h2>
           <p style={{ color: 'var(--text-3)', marginBottom: 32 }}>Введите пароль для просмотра</p>
-          <input
-            className="input"
+          <Input
+            className="rdx-input"
             type="password"
             value={passwordInput}
             onChange={e => setPasswordInput(e.target.value)}
@@ -208,14 +209,14 @@ export default function ProjectDetail() {
             placeholder="Пароль"
             style={{ marginBottom: 16, textAlign: 'center' }}
           />
-          <button className="btn btn-primary" onClick={submitPassword} style={{ width: '100%' }}>Открыть</button>
+          <Button variant="primary" onClick={submitPassword} style={{ width: '100%' }}>Открыть</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <Tooltip.Provider>
+    <TooltipPrimitive.Provider>
     <div style={{ paddingTop: 100, minHeight: '100vh', position: 'relative', zIndex: 1 }}>
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px 80px' }}>
 
@@ -244,34 +245,34 @@ export default function ProjectDetail() {
             </Link>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <button onClick={toggleLike} className="btn-icon" style={{ background: liked ? 'var(--accent-dim)' : undefined, borderColor: liked ? 'var(--accent)' : undefined }}>
+            <TooltipPrimitive.Root>
+              <TooltipPrimitive.Trigger asChild>
+                <IconButton onClick={toggleLike} style={{ background: liked ? 'var(--accent-dim)' : undefined, borderColor: liked ? 'var(--accent)' : undefined }}>
                   <Heart size={16} fill={liked ? 'var(--accent)' : 'none'} color={liked ? 'var(--accent)' : 'var(--text-2)'} />
-                </button>
-              </Tooltip.Trigger>
-              <Tooltip.Content sideOffset={6}>{likeCount} лайков</Tooltip.Content>
-            </Tooltip.Root>
+                </IconButton>
+              </TooltipPrimitive.Trigger>
+              <TooltipPrimitive.Content sideOffset={6}>{likeCount} лайков</TooltipPrimitive.Content>
+            </TooltipPrimitive.Root>
 
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <button onClick={openCollections} className="btn-icon" style={{ background: saved ? 'rgba(var(--accent-rgb), 0.1)' : undefined, borderColor: saved ? 'var(--accent)' : undefined }}>
+            <TooltipPrimitive.Root>
+              <TooltipPrimitive.Trigger asChild>
+                <IconButton onClick={openCollections} style={{ background: saved ? 'rgba(var(--accent-rgb), 0.1)' : undefined, borderColor: saved ? 'var(--accent)' : undefined }}>
                   {saved ? <BookmarkCheck size={16} color="var(--accent)" /> : <Bookmark size={16} color="var(--text-2)" />}
-                </button>
-              </Tooltip.Trigger>
-              <Tooltip.Content sideOffset={6}>{saved ? 'Сохранено' : 'Сохранить'} ({saveCount})</Tooltip.Content>
-            </Tooltip.Root>
+                </IconButton>
+              </TooltipPrimitive.Trigger>
+              <TooltipPrimitive.Content sideOffset={6}>{saved ? 'Сохранено' : 'Сохранить'} ({saveCount})</TooltipPrimitive.Content>
+            </TooltipPrimitive.Root>
 
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <button className="btn-icon" onClick={handleRepost}><Link2 size={16} color="var(--text-2)" /></button>
-              </Tooltip.Trigger>
-              <Tooltip.Content sideOffset={6}>Скопировать ссылку</Tooltip.Content>
-            </Tooltip.Root>
+            <TooltipPrimitive.Root>
+              <TooltipPrimitive.Trigger asChild>
+                <IconButton onClick={handleRepost}><Link2 size={16} color="var(--text-2)" /></IconButton>
+              </TooltipPrimitive.Trigger>
+              <TooltipPrimitive.Content sideOffset={6}>Скопировать ссылку</TooltipPrimitive.Content>
+            </TooltipPrimitive.Root>
 
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <button className="btn-icon" onClick={async () => {
+            <TooltipPrimitive.Root>
+              <TooltipPrimitive.Trigger asChild>
+                <IconButton onClick={async () => {
                   const url = window.location.href;
                   if (navigator.share) {
                     try { await navigator.share({ title: project.title, url }); } catch {}
@@ -279,26 +280,26 @@ export default function ProjectDetail() {
                     await navigator.clipboard.writeText(url);
                     showToast('Ссылка скопирована', 'success');
                   }
-                }}><Share2 size={16} color="var(--text-2)" /></button>
-              </Tooltip.Trigger>
-              <Tooltip.Content sideOffset={6}>Поделиться</Tooltip.Content>
-            </Tooltip.Root>
+                }}><Share2 size={16} color="var(--text-2)" /></IconButton>
+              </TooltipPrimitive.Trigger>
+              <TooltipPrimitive.Content sideOffset={6}>Поделиться</TooltipPrimitive.Content>
+            </TooltipPrimitive.Root>
 
             {user && project.author.id !== user.id && (
-              <button className={`btn ${following ? 'btn-secondary' : 'btn-primary'} btn-sm`} onClick={toggleFollow}>
+              <Button variant={following ? 'secondary' : 'primary'} size="sm" onClick={toggleFollow}>
                 {following ? <><UserCheck size={14} /> Подписка</> : <><UserPlus size={14} /> Подписаться</>}
-              </button>
+              </Button>
             )}
 
             {user && project.author.id === user.id && (
-              <Tooltip.Root>
-                <Tooltip.Trigger asChild>
-                  <button onClick={deleteProject} className="btn-icon" style={{ borderColor: '#ef4444' }}>
+              <TooltipPrimitive.Root>
+                <TooltipPrimitive.Trigger asChild>
+                  <IconButton onClick={deleteProject} style={{ borderColor: '#ef4444' }}>
                     <Trash2 size={16} color="#ef4444" />
-                  </button>
-                </Tooltip.Trigger>
-                <Tooltip.Content sideOffset={6}>Удалить проект</Tooltip.Content>
-              </Tooltip.Root>
+                  </IconButton>
+                </TooltipPrimitive.Trigger>
+                <TooltipPrimitive.Content sideOffset={6}>Удалить проект</TooltipPrimitive.Content>
+              </TooltipPrimitive.Root>
             )}
           </div>
         </div>
@@ -443,8 +444,8 @@ export default function ProjectDetail() {
 
           {user && (
             <div style={{ display: 'flex', gap: 12, marginBottom: 40 }}>
-              <input className="input" placeholder="Написать комментарий..." value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitComment()} style={{ flex: 1 }} />
-              <button className="btn btn-primary btn-sm" onClick={submitComment}>Отправить</button>
+              <Input placeholder="Написать комментарий..." value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitComment()} style={{ flex: 1 }} />
+              <Button variant="primary" size="sm" onClick={submitComment}>Отправить</Button>
             </div>
           )}
 
@@ -491,17 +492,13 @@ export default function ProjectDetail() {
     </div>
 
     {/* Save to collection dialog */}
-    <Dialog.Root open={collectionsOpen} onOpenChange={setCollectionsOpen}>
-      <Dialog.Portal>
-        <Dialog.Overlay style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 5000 }} />
-        <Dialog.Content style={{
-          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-          width: '100%', maxWidth: 400, background: 'var(--card)', borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--glass-border)', padding: 32, zIndex: 5001,
-        }}>
+    <DialogPrimitive.Root open={collectionsOpen} onOpenChange={setCollectionsOpen}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="rdx-dialog-overlay" />
+        <DialogPrimitive.Content className="rdx-dialog-content" style={{ maxWidth: 400 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <Dialog.Title style={{ fontFamily: 'var(--font-display)', fontSize: 24 }}>Сохранить в коллекцию</Dialog.Title>
-            <Dialog.Close style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}><X size={18} /></Dialog.Close>
+            <DialogPrimitive.Title className="rdx-dialog-title">Сохранить в коллекцию</DialogPrimitive.Title>
+            <DialogPrimitive.Close style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}><X size={18} /></DialogPrimitive.Close>
           </div>
 
           {collections.length > 0 && (
@@ -523,19 +520,18 @@ export default function ProjectDetail() {
           )}
 
           <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              className="input"
+            <Input
               value={newCollName}
               onChange={e => setNewCollName(e.target.value)}
               placeholder="Новая коллекция..."
               onKeyDown={e => e.key === 'Enter' && createAndSave()}
               style={{ flex: 1 }}
             />
-            <button className="btn btn-primary btn-sm" onClick={createAndSave}><Plus size={14} /></button>
+            <Button variant="primary" size="sm" onClick={createAndSave}><Plus size={14} /></Button>
           </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
 
     {/* Lightbox */}
     {lightboxUrl && (
@@ -551,6 +547,6 @@ export default function ProjectDetail() {
       </div>
     )}
 
-    </Tooltip.Provider>
+    </TooltipPrimitive.Provider>
   );
 }

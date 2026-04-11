@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import * as Tabs from '@radix-ui/react-tabs';
+import { Tabs, TabsList, TabsTrigger, Input, Button } from '../components/ui';
 import api from '../utils/api';
 import { Search as SearchIcon, Heart, Eye, Tag, Users, Briefcase, TrendingUp } from 'lucide-react';
 
@@ -80,7 +80,7 @@ export default function Search() {
         <div style={{ display: 'flex', gap: 12, marginBottom: 24, position: 'relative' }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <SearchIcon size={16} color="var(--text-3)" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 1 }} />
-            <input className="input" value={query} onChange={handleInputChange}
+            <Input value={query} onChange={handleInputChange}
               onKeyDown={e => { if (e.key === 'Enter') { setShowSuggestions(false); doSearch(query); } }}
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
@@ -100,18 +100,18 @@ export default function Search() {
               </div>
             )}
           </div>
-          <button className="btn btn-primary" onClick={() => doSearch(query)}>Найти</button>
+          <Button variant="primary" onClick={() => doSearch(query)}>Найти</Button>
         </div>
 
-        <Tabs.Root value={tab} onValueChange={handleTabChange} style={{ marginBottom: 32 }}>
-          <Tabs.List style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', marginBottom: 24 }}>
+        <Tabs value={tab} onValueChange={handleTabChange} style={{ marginBottom: 32 }}>
+          <TabsList style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', marginBottom: 24 }}>
             {[['projects', 'Проекты', Briefcase], ['users', 'Авторы', Users], ['tags', 'Теги', Tag]].map(([val, lbl, Icon]) => (
-              <Tabs.Trigger key={val} value={val} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '12px 20px', border: 'none', background: 'none', color: tab === val ? 'var(--accent)' : 'var(--text-3)', borderBottom: tab === val ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', fontWeight: 500, fontSize: 14, transition: 'all 0.2s' }}>
+              <TabsTrigger key={val} value={val} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '12px 20px', border: 'none', background: 'none', color: tab === val ? 'var(--accent)' : 'var(--text-3)', borderBottom: tab === val ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer', fontWeight: 500, fontSize: 14, transition: 'all 0.2s' }}>
                 <Icon size={15} /> {lbl}
-              </Tabs.Trigger>
+              </TabsTrigger>
             ))}
-          </Tabs.List>
-        </Tabs.Root>
+          </TabsList>
+        </Tabs>
 
         {!q && popularTags.length > 0 && (
           <div style={{ marginBottom: 40 }}>

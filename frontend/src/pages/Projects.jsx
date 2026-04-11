@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import * as Tabs from '@radix-ui/react-tabs';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui';
 import api from '../utils/api';
 import { LayoutGrid, Heart, Eye } from 'lucide-react';
 
@@ -27,27 +27,27 @@ export default function Projects() {
           Проекты
         </h1>
 
-        <Tabs.Root value={sort} onValueChange={v => { setSearchParams({ sort: v }); setPage(1); }}>
-          <Tabs.List style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', marginBottom: 48, width: 'fit-content' }}>
+        <Tabs value={sort} onValueChange={v => { setSearchParams({ sort: v }); setPage(1); }}>
+          <TabsList style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', marginBottom: 48, width: 'fit-content' }}>
             {[['recent', 'Новые'], ['trending', 'В тренде'], ['popular', 'Популярные'], ['featured', 'Избранные']].map(([val, label]) => (
-              <Tabs.Trigger key={val} value={val} style={{
+              <TabsTrigger key={val} value={val} style={{
                 padding: '10px 24px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 500,
                 color: sort === val ? 'var(--text)' : 'var(--text-3)',
                 background: sort === val ? 'rgba(255,255,255,0.08)' : 'transparent',
                 border: 'none', cursor: 'pointer', transition: 'all 0.3s',
               }}>
                 {label}
-              </Tabs.Trigger>
+              </TabsTrigger>
             ))}
-          </Tabs.List>
-        </Tabs.Root>
+          </TabsList>
+        </Tabs>
 
         {projects.length === 0 && !loading ? (
           <div className="empty-state">
             <LayoutGrid size={64} color="var(--text-3)" style={{ opacity: 0.2, margin: '0 auto 24px' }} />
             <h3 className="empty-state-title">Здесь пока пусто</h3>
             <p className="empty-state-text">Станьте первым, кто опубликует проект в этой категории.</p>
-            <Link to="/upload" className="btn btn-primary">Загрузить проект</Link>
+            <Link to="/upload" className="rdx-btn rdx-btn-primary">Загрузить проект</Link>
           </div>
         ) : (
           <div className="project-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Dialog } from './ui';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Search as SearchIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,31 +25,15 @@ export default function SearchDialog({ open, onOpenChange }) {
   const suggestions = ['UI/UX Design', 'Branding & Identity', '3D & Motion', 'Web Design', 'Illustration'];
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay style={{
-          background: 'rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          position: 'fixed',
-          inset: 0,
-          zIndex: 5000,
-        }} />
-        <Dialog.Content style={{
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="rdx-dialog-overlay" />
+        <DialogPrimitive.Content className="rdx-dialog-content" style={{
           width: 'min(600px, 90vw)',
           padding: 0,
           top: '20%',
           transform: 'translateX(-50%)',
           overflow: 'hidden',
-          background: 'rgba(18, 18, 24, 0.9)',
-          backdropFilter: 'blur(40px) saturate(1.6)',
-          WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-          borderRadius: 'var(--radius-xl)',
-          border: '1px solid var(--glass-border)',
-          boxShadow: 'var(--shadow-xl)',
-          position: 'fixed',
-          left: '50%',
-          zIndex: 5001,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 24px', borderBottom: '1px solid var(--glass-border)' }}>
             <SearchIcon size={18} color="var(--text-3)" />
@@ -89,8 +74,8 @@ export default function SearchDialog({ open, onOpenChange }) {
             <span><kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', fontSize: 10 }}>ESC</kbd> закрыть</span>
             <span><kbd style={{ padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', fontSize: 10 }}>Enter</kbd> поиск</span>
           </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </Dialog>
   );
 }

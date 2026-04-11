@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useToast } from '../context/ToastContext';
+import { Input, Textarea, Label, Button } from '../components/ui';
 import { Upload as UploadIcon, X, Plus, CheckCircle, Type, Image, Video, Code, Quote, Minus, GripVertical, Clock, Save, Eye } from 'lucide-react';
 
 const CATEGORIES = ['UI/UX', 'Branding', '3D & Motion', 'Illustration', 'Web Design', 'Mobile Apps', 'Typography', 'Photography'];
@@ -244,33 +245,33 @@ export default function Upload() {
         {/* Fields */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div>
-            <label className="input-label">Название проекта *</label>
-            <input className="input" placeholder="Например: Nebula — Brand Identity" value={title} onChange={e => setTitle(e.target.value)} />
+            <Label>Название проекта *</Label>
+            <Input placeholder="Например: Nebula — Brand Identity" value={title} onChange={e => setTitle(e.target.value)} />
           </div>
           <div>
-            <label className="input-label">Описание</label>
-            <textarea className="input" rows={4} placeholder="Расскажите о проекте..." value={description} onChange={e => setDescription(e.target.value)} style={{ resize: 'vertical', minHeight: 100 }} />
+            <Label>Описание</Label>
+            <Textarea rows={4} placeholder="Расскажите о проекте..." value={description} onChange={e => setDescription(e.target.value)} style={{ resize: 'vertical', minHeight: 100 }} />
           </div>
           <div>
-            <label className="input-label">Категория</label>
-            <select className="input" value={category} onChange={e => setCategory(e.target.value)} style={{ appearance: 'none' }}>
+            <Label>Категория</Label>
+            <select className="rdx-input" value={category} onChange={e => setCategory(e.target.value)} style={{ appearance: 'none' }}>
               <option value="">Выберите категорию</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
-            <label className="input-label">Теги (через запятую)</label>
-            <input className="input" placeholder="minimal, dark, dashboard" value={tags} onChange={e => setTags(e.target.value)} />
+            <Label>Теги (через запятую)</Label>
+            <Input placeholder="minimal, dark, dashboard" value={tags} onChange={e => setTags(e.target.value)} />
           </div>
           <div>
-            <label className="input-label">Инструменты (через запятую)</label>
-            <input className="input" placeholder="Figma, Photoshop, Blender" value={tools} onChange={e => setTools(e.target.value)} />
+            <Label>Инструменты (через запятую)</Label>
+            <Input placeholder="Figma, Photoshop, Blender" value={tools} onChange={e => setTools(e.target.value)} />
           </div>
 
           {/* Case study block builder */}
           {mode === 'case-study' && (
             <div>
-              <label className="input-label">Блоки контента</label>
+              <Label>Блоки контента</Label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
                 {blocks.map((block, idx) => (
                   <div key={block.id} style={{
@@ -291,8 +292,7 @@ export default function Upload() {
                     </div>
                     {/* Block content */}
                     {['TEXT', 'HEADING', 'QUOTE', 'CODE'].includes(block.type) && (
-                      <textarea
-                        className="input"
+                      <Textarea
                         rows={block.type === 'HEADING' ? 1 : 3}
                         value={block.content}
                         onChange={e => updateBlock(block.id, 'content', e.target.value)}
@@ -301,24 +301,21 @@ export default function Upload() {
                       />
                     )}
                     {['IMAGE', 'VIDEO', 'BEFORE_AFTER'].includes(block.type) && (
-                      <input
-                        className="input"
+                      <Input
                         value={block.mediaUrl}
                         onChange={e => updateBlock(block.id, 'mediaUrl', e.target.value)}
                         placeholder="URL изображения или видео"
                       />
                     )}
                     {block.type === 'EMBED' && (
-                      <input
-                        className="input"
+                      <Input
                         value={block.content}
                         onChange={e => updateBlock(block.id, 'content', e.target.value)}
                         placeholder="URL для embed (YouTube, Figma, CodePen...)"
                       />
                     )}
                     {block.type === 'IMAGE_GALLERY' && (
-                      <textarea
-                        className="input"
+                      <Textarea
                         rows={2}
                         value={block.content}
                         onChange={e => updateBlock(block.id, 'content', e.target.value)}
@@ -350,41 +347,43 @@ export default function Upload() {
           {/* Scheduling */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
-              <label className="input-label">Индустрия</label>
-              <input className="input" placeholder="Fintech, E-commerce..." value={industry} onChange={e => setIndustry(e.target.value)} />
+              <Label>Индустрия</Label>
+              <Input placeholder="Fintech, E-commerce..." value={industry} onChange={e => setIndustry(e.target.value)} />
             </div>
             <div>
-              <label className="input-label">Стиль</label>
-              <input className="input" placeholder="Минимализм, Brutalism..." value={style} onChange={e => setStyle(e.target.value)} />
+              <Label>Стиль</Label>
+              <Input placeholder="Минимализм, Brutalism..." value={style} onChange={e => setStyle(e.target.value)} />
             </div>
           </div>
 
           <div>
-            <label className="input-label">Отложенная публикация</label>
+            <Label>Отложенная публикация</Label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <Clock size={16} color="var(--text-3)" />
-              <input className="input" type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} style={{ flex: 1 }} />
+              <Input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} style={{ flex: 1 }} />
               {scheduledAt && <button onClick={() => setScheduledAt('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}><X size={14} /></button>}
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-            <button
-              className="btn btn-secondary btn-lg"
+            <Button
+              variant="secondary"
+              size="lg"
               onClick={() => handleSubmit(true)}
               disabled={uploading}
               style={{ flex: 1, opacity: uploading ? 0.6 : 1 }}
             >
               <Save size={14} /> Черновик
-            </button>
-            <button
-              className="btn btn-primary btn-lg"
+            </Button>
+            <Button
+              variant="primary"
+              size="lg"
               onClick={() => handleSubmit(false)}
               disabled={uploading}
               style={{ flex: 2, opacity: uploading ? 0.6 : 1 }}
             >
               {uploading ? uploadProgress || 'Публикация...' : scheduledAt ? 'Запланировать' : 'Опубликовать проект'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

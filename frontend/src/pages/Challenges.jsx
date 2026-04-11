@@ -33,7 +33,7 @@ export default function Challenges() {
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Users size={13} /> {c._count?.entries || 0} участников</span>
                   </div>
                 </div>
-                <button className="btn btn-primary">{c.isActive ? 'Участвовать' : 'Результаты'}</button>
+                <button className="rdx-btn rdx-btn-primary">{c.isActive ? 'Участвовать' : 'Результаты'}</button>
               </Link>
             ))}
           </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../utils/api';
+import { Input, Label, Button } from '../components/ui';
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -62,13 +63,13 @@ export default function ResetPassword() {
             <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 32 }}>Введите email, и мы отправим ссылку для сброса</p>
             <form onSubmit={handleRequest} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label className="input-label">Email</label>
-                <input className="input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+                <Label>Email</Label>
+                <Input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
               </div>
               {error && <div style={{ fontSize: 13, color: '#ff6b6b', padding: '8px 12px', background: 'rgba(255,107,107,0.08)', borderRadius: 'var(--radius-xs)' }}>{error}</div>}
-              <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: '100%', opacity: loading ? 0.6 : 1 }}>
+              <Button variant="primary" type="submit" disabled={loading} style={{ width: '100%', opacity: loading ? 0.6 : 1 }}>
                 {loading ? 'Отправка...' : 'Отправить ссылку'}
-              </button>
+              </Button>
             </form>
           </>
         )}
@@ -79,17 +80,17 @@ export default function ResetPassword() {
             <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 32 }}>Введите новый пароль (минимум 8 символов)</p>
             <form onSubmit={handleReset} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label className="input-label">Новый пароль</label>
-                <input className="input" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+                <Label>Новый пароль</Label>
+                <Input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
               </div>
               <div>
-                <label className="input-label">Подтвердите пароль</label>
-                <input className="input" type="password" placeholder="••••••••" value={confirm} onChange={e => setConfirm(e.target.value)} />
+                <Label>Подтвердите пароль</Label>
+                <Input type="password" placeholder="••••••••" value={confirm} onChange={e => setConfirm(e.target.value)} />
               </div>
               {error && <div style={{ fontSize: 13, color: '#ff6b6b', padding: '8px 12px', background: 'rgba(255,107,107,0.08)', borderRadius: 'var(--radius-xs)' }}>{error}</div>}
-              <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: '100%', opacity: loading ? 0.6 : 1 }}>
+              <Button variant="primary" type="submit" disabled={loading} style={{ width: '100%', opacity: loading ? 0.6 : 1 }}>
                 {loading ? 'Сохранение...' : 'Сохранить пароль'}
-              </button>
+              </Button>
             </form>
           </>
         )}
@@ -103,7 +104,7 @@ export default function ResetPassword() {
             <p style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 24 }}>
               {token ? 'Теперь вы можете войти с новым паролем.' : 'Проверьте почту для инструкций по сбросу пароля.'}
             </p>
-            <Link to="/" className="btn btn-primary">На главную</Link>
+            <Link to="/" className="rdx-btn rdx-btn-primary">На главную</Link>
           </div>
         )}
       </div>

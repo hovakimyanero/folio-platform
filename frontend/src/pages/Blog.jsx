@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { Input, Textarea, Button } from '../components/ui';
 import { Plus, Calendar, User } from 'lucide-react';
 
 export default function Blog() {
@@ -39,19 +40,19 @@ export default function Blog() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 48 }}>
           <h1 className="page-title" style={{ fontFamily: 'var(--font-display)', fontSize: 48, letterSpacing: '-0.03em', margin: 0 }}>Блог</h1>
           {user && (
-            <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+            <Button variant="primary" onClick={() => setShowForm(!showForm)}>
               <Plus size={14} /> Написать статью
-            </button>
+            </Button>
           )}
         </div>
 
         {showForm && (
           <div style={{ background: 'var(--card)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)', padding: 32, marginBottom: 40 }}>
-            <input className="input" placeholder="Заголовок статьи" value={title} onChange={e => setTitle(e.target.value)} style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }} />
-            <textarea className="input" placeholder="Содержание статьи..." value={content} onChange={e => setContent(e.target.value)} rows={10} style={{ resize: 'vertical', marginBottom: 16 }} />
+            <Input placeholder="Заголовок статьи" value={title} onChange={e => setTitle(e.target.value)} style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }} />
+            <Textarea placeholder="Содержание статьи..." value={content} onChange={e => setContent(e.target.value)} rows={10} style={{ resize: 'vertical', marginBottom: 16 }} />
             <div style={{ display: 'flex', gap: 12 }}>
-              <button className="btn btn-primary" onClick={handlePublish} disabled={publishing}>{publishing ? 'Публикация...' : 'Опубликовать'}</button>
-              <button className="btn btn-secondary" onClick={() => setShowForm(false)}>Отмена</button>
+              <Button variant="primary" onClick={handlePublish} disabled={publishing}>{publishing ? 'Публикация...' : 'Опубликовать'}</Button>
+              <Button variant="secondary" onClick={() => setShowForm(false)}>Отмена</Button>
             </div>
           </div>
         )}
